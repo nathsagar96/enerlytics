@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: ingestion-service
+
+  kafka:
+    bootstrap-servers: localhost:9094
+    template:
+      default-topic: energy-usage
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+  metrics:
+    enable:
+      http:
+        client:
+          requests: true
+        server:
+          requests: true
