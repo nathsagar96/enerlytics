@@ -76,6 +76,44 @@ class DeviceControllerTest {
     }
 
     @Nested
+    @DisplayName("GET /api/v1/devices/batch (getDevicesByIds)")
+    class GetDevicesByIds {
+        @Test
+        @DisplayName("should return 200 OK and list of devices when valid IDs are provided")
+        void shouldReturn200OkAndListOfDevicesWhenValidIdsAreProvided() throws Exception {
+            // Arrange
+            UUID id1 = UUID.randomUUID();
+            UUID id2 = UUID.randomUUID();
+            DeviceResponse device1 =
+                    new DeviceResponse(id1, "Device 1", DeviceType.SPEAKER, "Location", UUID.randomUUID());
+            DeviceResponse device2 =
+                    new DeviceResponse(id2, "Device 2", DeviceType.CAMERA, "Location", UUID.randomUUID());
+            List<DeviceResponse> expectedResponse = List.of(device1, device2);
+
+            when(deviceService.getDevicesByIds(anySet())).thenReturn(expectedResponse);
+
+            // Act & Assert
+            mockMvc.perform(get("/api/v1/devices/batch").param("ids", id1 + "," + id2))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
+
+            verify(deviceService, times(1)).getDevicesByIds(anySet());
+        }
+
+        @Test
+        @DisplayName("should return 200 OK and empty list when no IDs are provided")
+        void shouldReturn200OkAndEmptyListWhenNoIdsAreProvided() throws Exception {
+            // Arrange
+            when(deviceService.getDevicesByIds(anySet())).thenReturn(List.of());
+
+            // Act & Assert
+            mockMvc.perform(get("/api/v1/devices/batch").param("ids", ""))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("[]"));
+        }
+    }
+
+    @Nested
     @DisplayName("GET /api/v1/devices/{id} (getDeviceById)")
     class GetDeviceById {
         @Test

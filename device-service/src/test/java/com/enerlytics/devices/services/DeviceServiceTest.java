@@ -13,6 +13,7 @@ import com.enerlytics.devices.mappers.DeviceMapper;
 import com.enerlytics.devices.repositories.DeviceRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -63,6 +64,54 @@ class DeviceServiceTest {
             verify(mapper, times(1)).toEntity(request);
             verify(repository, times(1)).save(device);
             verify(mapper, times(1)).toResponse(device);
+        }
+    }
+
+    @Nested
+    @DisplayName("Get Devices By IDs (Batch)")
+    class GetDevicesByIds {
+        @Test
+        @DisplayName("should return list of device responses when device IDs exist")
+        void shouldReturnListOfDeviceResponsesWhenDeviceIdsExist() {
+            // Arrange
+            UUID id1 = UUID.randomUUID();
+            UUID id2 = UUID.randomUUID();
+            Set<UUID> ids = Set.of(id1, id2);
+
+            Device device1 = new Device();
+            device1.setId(id1);
+            Device device2 = new Device();
+            device2.setId(id2);
+            List<Device> devices = List.of(device1, device2);
+
+            DeviceResponse response1 =
+                    new DeviceResponse(id1, "Device 1", DeviceType.SPEAKER, "Loc 1", UUID.randomUUID());
+            DeviceResponse response2 =
+                    new DeviceResponse(id2, "Device 2", DeviceType.CAMERA, "Loc 2", UUID.randomUUID());
+
+            when(repository.findAllById(ids)).thenReturn(devices);
+            when(mapper.toResponse(device1)).thenReturn(response1);
+            when(mapper.toResponse(device2)).thenReturn(response2);
+
+            // Act
+            List<DeviceResponse> actualResponse = deviceService.getDevicesByIds(ids);
+
+            // Assert
+            assertNotNull(actualResponse);
+            assertEquals(2, actualResponse.size());
+            assertTrue(actualResponse.contains(response1));
+            assertTrue(actualResponse.contains(response2));
+            verify(repository, times(1)).findAllById(ids);
+            verify(mapper, times(2)).toResponse(any());
+        }
+
+        @Test
+        @DisplayName("should return empty list when IDs are null or empty")
+        void shouldReturnEmptyListWhenIdsAreNullOrEmpty() {
+            // Act & Assert
+            assertTrue(deviceService.getDevicesByIds(null).isEmpty());
+            assertTrue(deviceService.getDevicesByIds(Set.of()).isEmpty());
+            verify(repository, never()).findAllById(any());
         }
     }
 

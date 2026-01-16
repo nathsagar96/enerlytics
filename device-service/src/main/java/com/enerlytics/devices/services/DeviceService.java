@@ -7,6 +7,8 @@ import com.enerlytics.devices.entities.Device;
 import com.enerlytics.devices.exceptions.DeviceNotFoundException;
 import com.enerlytics.devices.mappers.DeviceMapper;
 import com.enerlytics.devices.repositories.DeviceRepository;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,19 @@ public class DeviceService {
 
         log.info("Device created successfully with id: {}", savedDevice.getId());
         return mapper.toResponse(savedDevice);
+    }
+
+    public List<DeviceResponse> getDevicesByIds(Set<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            log.debug("No device IDs provided for batch fetch");
+            return java.util.Collections.emptyList();
+        }
+
+        log.debug("Fetching devices in batch for {} ids", ids.size());
+        var devices = repository.findAllById(ids);
+
+        log.info("Successfully fetched {} devices in batch", devices.size());
+        return devices.stream().map(mapper::toResponse).toList();
     }
 
     public DeviceResponse getDeviceById(UUID id) {

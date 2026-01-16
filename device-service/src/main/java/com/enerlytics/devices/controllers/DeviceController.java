@@ -5,6 +5,8 @@ import com.enerlytics.devices.dtos.responses.DeviceResponse;
 import com.enerlytics.devices.dtos.responses.PageResponse;
 import com.enerlytics.devices.services.DeviceService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,12 @@ public class DeviceController {
     PageResponse<DeviceResponse> getAllDevices(
             @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
         return service.getAllDevices(pageNumber, pageSize);
+    }
+
+    @GetMapping("/batch")
+    @ResponseStatus(HttpStatus.OK)
+    List<DeviceResponse> getDevicesByIds(@RequestParam Set<UUID> ids) {
+        return service.getDevicesByIds(ids);
     }
 
     @GetMapping("/user/{userId}")
