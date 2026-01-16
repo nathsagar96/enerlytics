@@ -119,6 +119,54 @@ class UserServiceTest {
     }
 
     @Nested
+    @DisplayName("Get Users By IDs (Batch)")
+    class GetUsersByIds {
+        @Test
+        @DisplayName("Should return a list of user responses when user IDs exist")
+        void shouldReturnListOfUserResponsesWhenUserIdsExist() {
+            // Arrange
+            UUID id1 = UUID.randomUUID();
+            UUID id2 = UUID.randomUUID();
+            java.util.Set<UUID> ids = java.util.Set.of(id1, id2);
+
+            User user1 = new User();
+            user1.setId(id1);
+            User user2 = new User();
+            user2.setId(id2);
+            List<User> users = List.of(user1, user2);
+
+            UserResponse response1 =
+                    new UserResponse(id1, "John", "Doe", "john@example.com", "123 Main St", true, 100.0);
+            UserResponse response2 =
+                    new UserResponse(id2, "Jane", "Smith", "jane@example.com", "456 Oak Ave", false, 50.0);
+
+            when(repository.findAllById(ids)).thenReturn(users);
+            when(mapper.toResponse(user1)).thenReturn(response1);
+            when(mapper.toResponse(user2)).thenReturn(response2);
+
+            // Act
+            List<UserResponse> result = userService.getUsersByIds(ids);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(2, result.size());
+            assertTrue(result.contains(response1));
+            assertTrue(result.contains(response2));
+            verify(repository, times(1)).findAllById(ids);
+            verify(mapper, times(2)).toResponse(any());
+        }
+
+        @Test
+        @DisplayName("Should return empty list when IDs are null or empty")
+        void shouldReturnEmptyListWhenIdsAreNullOrEmpty() {
+            // Act & Assert
+            assertTrue(userService.getUsersByIds(null).isEmpty());
+            assertTrue(userService.getUsersByIds(java.util.Set.of()).isEmpty());
+            verify(repository, never()).findAllById(any());
+        }
+    }
+
+    @Nested
     @DisplayName("Create User")
     class CreateUser {
 
@@ -277,17 +325,15 @@ class UserServiceTest {
         void shouldDeleteUserWhenUserExists() {
             // Arrange
             UUID id = UUID.randomUUID();
-            User user = new User();
-            user.setId(id);
 
-            when(repository.findById(id)).thenReturn(Optional.of(user));
+            when(repository.existsById(id)).thenReturn(true);
 
             // Act
             userService.deleteUser(id);
 
             // Assert
-            verify(repository, times(1)).findById(id);
-            verify(repository, times(1)).delete(user);
+            verify(repository, times(1)).existsById(id);
+            verify(repository, times(1)).deleteById(id);
         }
 
         @Test
@@ -296,15 +342,15 @@ class UserServiceTest {
             // Arrange
             UUID id = UUID.randomUUID();
 
-            when(repository.findById(id)).thenReturn(Optional.empty());
+            when(repository.existsById(id)).thenReturn(false);
 
             // Act & Assert
             UserNotFoundException exception =
                     assertThrows(UserNotFoundException.class, () -> userService.deleteUser(id));
 
             assertEquals("User not found with ID: " + id, exception.getMessage());
-            verify(repository, times(1)).findById(id);
-            verify(repository, never()).delete(any());
+            verify(repository, times(1)).existsById(id);
+            verify(repository, never()).deleteById(id);
         }
     }
 }

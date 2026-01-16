@@ -1,7 +1,7 @@
 package com.enerlytics.ingestions.services;
 
+import com.enerlytics.EnergyUsageEvent;
 import com.enerlytics.ingestions.dtos.requests.EnergyUsageRequest;
-import com.enerlytics.ingestions.events.EnergyUsageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

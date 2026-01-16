@@ -57,10 +57,30 @@ services:
     networks:
       - enerlytics
 
+  influxdb:
+    image: influxdb:2
+    container_name: influxdb
+    ports:
+      - "8072:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=enerlytics
+      - DOCKER_INFLUXDB_INIT_BUCKET=usage-bucket
+      - DOCKER_INFLUXDB_INIT_RETENTION=1w
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-token
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    networks:
+      - enerlytics
+
 volumes:
   postgres-data:
     driver: local
   kafka-data:
+    driver: local
+  influxdb-data:
     driver: local
 
 networks:

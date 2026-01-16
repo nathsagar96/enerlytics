@@ -176,6 +176,48 @@ class UserControllerTest {
     }
 
     @Nested
+    @DisplayName("Batch Fetch Users")
+    class GetUsersByIds {
+        @Test
+        @DisplayName("Should return a list of user responses when users exist for provided IDs")
+        void shouldReturnListOfUserResponsesWhenUsersExistForProvidedIds() throws Exception {
+            // Arrange
+            UUID id1 = UUID.randomUUID();
+            UUID id2 = UUID.randomUUID();
+            UserResponse user1 = createSampleUserResponse(id1);
+            UserResponse user2 = createSampleUserResponse(id2);
+            List<UserResponse> expectedResponse = List.of(user1, user2);
+
+            when(userService.getUsersByIds(anySet())).thenReturn(expectedResponse);
+
+            // Act & Assert
+            mockMvc.perform(get("/api/v1/users/batch")
+                            .param("ids", id1 + "," + id2)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$.length()").value(2))
+                    .andExpect(jsonPath("$[0].id").value(id1.toString()))
+                    .andExpect(jsonPath("$[1].id").value(id2.toString()));
+
+            verify(userService, times(1)).getUsersByIds(anySet());
+        }
+
+        @Test
+        @DisplayName("Should return empty list when no IDs are provided")
+        void shouldReturnEmptyListWhenNoIdsAreProvided() throws Exception {
+            // Arrange
+            when(userService.getUsersByIds(anySet())).thenReturn(List.of());
+
+            // Act & Assert
+            mockMvc.perform(get("/api/v1/users/batch").param("ids", "").contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$.length()").value(0));
+        }
+    }
+
+    @Nested
     @DisplayName("Get User By ID")
     class GetUserById {
 

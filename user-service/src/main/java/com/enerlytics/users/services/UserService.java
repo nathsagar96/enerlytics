@@ -8,6 +8,9 @@ import com.enerlytics.users.exceptions.UserAlreadyExistsException;
 import com.enerlytics.users.exceptions.UserNotFoundException;
 import com.enerlytics.users.mappers.UserMapper;
 import com.enerlytics.users.repositories.UserRepository;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,20 @@ public class UserService {
         var users = repository.findAll(pageable);
 
         return mapper.toPageResponse(users);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> getUsersByIds(Set<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            log.debug("No user IDs provided for batch fetch");
+            return Collections.emptyList();
+        }
+
+        log.debug("Fetching users in batch for {} ids", ids.size());
+        var users = repository.findAllById(ids);
+
+        log.info("Successfully fetched {} users in batch", users.size());
+        return users.stream().map(mapper::toResponse).toList();
     }
 
     @Transactional
@@ -82,10 +99,11 @@ public class UserService {
     public void deleteUser(UUID id) {
         log.debug("Deleting user with ID: {}", id);
 
-        User user =
-                repository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
+        if (!repository.existsById(id)) {
+            throw new UserNotFoundException("User not found with ID: " + id);
+        }
 
-        repository.delete(user);
+        repository.deleteById(id);
         log.info("User deleted with ID: {}", id);
     }
 }

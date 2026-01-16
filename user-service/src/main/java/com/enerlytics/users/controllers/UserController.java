@@ -5,6 +5,8 @@ import com.enerlytics.users.dtos.responses.PageResponse;
 import com.enerlytics.users.dtos.responses.UserResponse;
 import com.enerlytics.users.services.UserService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,12 @@ public class UserController {
     PageResponse<UserResponse> getAllUsers(
             @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize) {
         return service.getAllUsers(pageNumber, pageSize);
+    }
+
+    @GetMapping("/batch")
+    @ResponseStatus(HttpStatus.OK)
+    List<UserResponse> getUsersByIds(@RequestParam Set<UUID> ids) {
+        return service.getUsersByIds(ids);
     }
 
     @PostMapping

@@ -1,4 +1,4 @@
-package com.enerlytics.ingestions.events;
+package com.enerlytics;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.Instant;
