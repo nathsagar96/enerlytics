@@ -259,6 +259,54 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Should update user successfully without changing email when email is not provided")
+    void updateUser_Successful_NoEmailChange() {
+        // Arrange
+        Long userId = 1L;
+        UpdateUserRequest request = new UpdateUserRequest("Johnathan", "Doe", null, "456 Elm St", false, 120.0);
+
+        User existingUser = User.builder()
+                .id(userId)
+                .firstName("John")
+                .lastName("Doe")
+                .email("john.doe@example.com")
+                .address("123 Main St")
+                .alerting(true)
+                .energyAlertingThreshold(100.0)
+                .build();
+
+        User updatedUser = User.builder()
+                .id(userId)
+                .firstName("Johnathan")
+                .lastName("Doe")
+                .email("john.doe@example.com")
+                .address("456 Elm St")
+                .alerting(false)
+                .energyAlertingThreshold(120.0)
+                .build();
+
+        UserResponse expectedResponse =
+                new UserResponse(userId, "Johnathan", "Doe", "john.doe@example.com", "456 Elm St", false, 120.0);
+
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(existingUser));
+        when(userRepository.save(existingUser)).thenReturn(updatedUser);
+        doNothing().when(userMapper).updateEntity(existingUser, request);
+        when(userMapper.toResponse(updatedUser)).thenReturn(expectedResponse);
+
+        // Act
+        UserResponse actualResponse = userService.updateUser(userId, request);
+
+        // Assert
+        assertNotNull(actualResponse);
+        assertEquals(expectedResponse, actualResponse);
+        verify(userRepository, times(1)).findById(userId);
+        verify(userRepository, never()).existsByEmailAndIdNot(any(), any());
+        verify(userMapper, times(1)).updateEntity(existingUser, request);
+        verify(userRepository, times(1)).save(existingUser);
+        verify(userMapper, times(1)).toResponse(updatedUser);
+    }
+
+    @Test
     @DisplayName("Should throw ResourceNotFoundException when updating non-existent user")
     void updateUser_UserNotFound() {
         // Arrange

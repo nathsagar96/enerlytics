@@ -6,6 +6,7 @@ import com.enerlytics.users.dtos.responses.UserResponse;
 import com.enerlytics.users.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -72,7 +73,7 @@ public class UserController {
     @ApiResponse(
             responseCode = "200",
             description = "Users fetched",
-            content = @Content(schema = @Schema(implementation = UserResponse.class)))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(service.getAllUsers());
     }

@@ -25,11 +25,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleNotFound(ResourceNotFoundException ex) {
+        log.warn("Resource not found: {}", ex.getMessage());
         return buildProblemDetail(HttpStatus.NOT_FOUND, ex.getMessage(), "/errors/not-found");
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
     public ProblemDetail handleDuplicate(DuplicateResourceException ex) {
+        log.warn("Duplicate resource: {}", ex.getMessage());
         return buildProblemDetail(HttpStatus.CONFLICT, ex.getMessage(), "/errors/conflict");
     }
 

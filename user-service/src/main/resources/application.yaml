@@ -1,33 +1,44 @@
+server:
+  port: ${SERVER_PORT:8080}
+
 spring:
   application:
     name: user-service
 
-  threads:
-    virtual:
-      enabled: true
-
   datasource:
-    url: jdbc:postgresql://localhost:5432/users
-    username: postgres
-    password: password
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:users}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
 
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    baseline-on-migrate: true
 
   mvc:
     problemdetails:
       enabled: true
 
-server:
-  port: 8080
-
 management:
-  metrics:
-    tags:
-      application: ${spring.application.name}
   endpoints:
     web:
       exposure:
         include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+app:
+  init-data: ${INIT_DATA:false}
+  openapi:
+    server-url: ${OPENAPI_SERVER_URL:http://localhost:8080}
+    server-description: ${OPENAPI_SERVER_DESCRIPTION:Local environment}

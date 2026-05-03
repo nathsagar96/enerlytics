@@ -24,35 +24,42 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
+        log.info("Creating user with email: {}", request.email());
         validateEmailForCreate(request.email());
         User user = mapper.toEntity(request);
         User savedUser = repository.save(user);
+        log.debug("User saved with id: {}", savedUser.getId());
         return mapper.toResponse(savedUser);
     }
 
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
+        log.info("Fetching user with id: {}", id);
         return mapper.toResponse(findUserById(id));
     }
 
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
+        log.info("Fetching all users");
         return repository.findAll().stream().map(mapper::toResponse).toList();
     }
 
     @Transactional
     public UserResponse updateUser(Long id, UpdateUserRequest request) {
+        log.info("Updating user with id: {}", id);
         User user = findUserById(id);
         if (request.email() != null) {
             validateEmailForUpdate(request.email(), id);
         }
         mapper.updateEntity(user, request);
         User updatedUser = repository.save(user);
+        log.debug("User updated with id: {}", updatedUser.getId());
         return mapper.toResponse(updatedUser);
     }
 
     @Transactional
     public void deleteUser(Long id) {
+        log.info("Deleting user with id: {}", id);
         User user = findUserById(id);
         repository.delete(user);
     }

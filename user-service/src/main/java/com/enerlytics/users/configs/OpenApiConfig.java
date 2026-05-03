@@ -6,11 +6,18 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenApiConfig {
+
+    @Value("${app.openapi.server-url}")
+    private String serverUrl;
+
+    @Value("${app.openapi.server-description}")
+    private String serverDescription;
 
     @Bean
     public OpenAPI openAPI() {
@@ -21,6 +28,6 @@ public class OpenApiConfig {
                         .version("v1")
                         .contact(new Contact().name("Enerlytics Team").email("api@enerlytics.com"))
                         .license(new License().name("MIT")))
-                .servers(List.of(new Server().url("http://localhost:8080").description("Local environment")));
+                .servers(List.of(new Server().url(serverUrl).description(serverDescription)));
     }
 }

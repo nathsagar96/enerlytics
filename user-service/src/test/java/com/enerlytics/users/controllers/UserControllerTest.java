@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.enerlytics.users.dtos.requests.CreateUserRequest;
 import com.enerlytics.users.dtos.requests.UpdateUserRequest;
 import com.enerlytics.users.dtos.responses.UserResponse;
+import com.enerlytics.users.exceptions.DuplicateResourceException;
 import com.enerlytics.users.exceptions.ResourceNotFoundException;
 import com.enerlytics.users.services.UserService;
 import java.util.List;
@@ -111,6 +112,52 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.errors").isMap());
+    }
+
+    @Test
+    @DisplayName("Should return 400 Bad Request when energyAlertingThreshold is negative")
+    void createUser_BadRequest_NegativeThreshold() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {
+                                        "firstName": "John",
+                                        "lastName": "Doe",
+                                        "email": "john.doe@example.com",
+                                        "address": "123 Main St",
+                                        "alerting": true,
+                                        "energyAlertingThreshold": -10.0
+                                    }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errors.energyAlertingThreshold").exists());
+    }
+
+    @Test
+    @DisplayName("Should return 409 Conflict when user email already exists")
+    void createUser_Conflict_EmailExists() throws Exception {
+        // Arrange
+        when(userService.createUser(any(CreateUserRequest.class)))
+                .thenThrow(new DuplicateResourceException("User with email already exists: john.doe@example.com"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {
+                                        "firstName": "John",
+                                        "lastName": "Doe",
+                                        "email": "john.doe@example.com",
+                                        "address": "123 Main St",
+                                        "alerting": true,
+                                        "energyAlertingThreshold": 100.0
+                                    }
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("User with email already exists: john.doe@example.com"));
     }
 
     @Test
@@ -242,6 +289,55 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Should return 400 Bad Request when energyAlertingThreshold is negative for update")
+    void updateUser_BadRequest_NegativeThreshold() throws Exception {
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {
+                                        "firstName": "Jane",
+                                        "lastName": "Smith",
+                                        "email": "jane.smith@example.com",
+                                        "address": "456 Elm St",
+                                        "alerting": false,
+                                        "energyAlertingThreshold": -20.0
+                                    }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.errors.energyAlertingThreshold").exists());
+    }
+
+    @Test
+    @DisplayName("Should return 409 Conflict when updating to an existing email")
+    void updateUser_Conflict_EmailExists() throws Exception {
+        // Arrange
+        UpdateUserRequest request =
+                new UpdateUserRequest("Jane", "Smith", "jane.smith@example.com", "456 Elm St", false, 200.0);
+
+        when(userService.updateUser(1L, request))
+                .thenThrow(new DuplicateResourceException("User with email already exists: jane.smith@example.com"));
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {
+                                        "firstName": "Jane",
+                                        "lastName": "Smith",
+                                        "email": "jane.smith@example.com",
+                                        "address": "456 Elm St",
+                                        "alerting": false,
+                                        "energyAlertingThreshold": 200.0
+                                    }
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("User with email already exists: jane.smith@example.com"));
+    }
+
+    @Test
     @DisplayName("Should return 404 Not Found when updating a user that does not exist")
     void updateUser_NotFound() throws Exception {
         // Arrange
@@ -292,5 +388,26 @@ class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail").value("User not found"));
+    }
+
+    @Test
+    @DisplayName("Should return 500 Internal Server Error when an unexpected exception occurs")
+    void handleUnexpectedException() throws Exception {
+        // Arrange
+        when(userService.getAllUsers()).thenThrow(new RuntimeException("Unexpected error"));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/users").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Internal server error"));
+    }
+
+    @Test
+    @DisplayName("Should return 400 Bad Request when user ID is invalid")
+    void getUserById_BadRequest_InvalidId() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/users/invalid-id").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }
