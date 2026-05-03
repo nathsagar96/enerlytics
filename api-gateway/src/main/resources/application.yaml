@@ -2,6 +2,17 @@ spring:
   application:
     name: api-gateway
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8091/realms/enerlytics/protocol/openid-connect/certs
+          issuer-uri: http://localhost:8091/realms/enerlytics
+
+security:
+  excluded:
+    urls: /actuator/**
+
 management:
   health:
     circuitbreakers:

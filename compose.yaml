@@ -42,7 +42,7 @@ services:
       - enerlytics
 
   kafka:
-    image: apache/kafka:latest
+    image: apache/kafka:4.2.0
     container_name: kafka
     environment:
       KAFKA_NODE_ID: 1
@@ -79,7 +79,7 @@ services:
 
   kafka-ui:
     container_name: kafka-ui
-    image: ghcr.io/kafbat/kafka-ui:latest
+    image: ghcr.io/kafbat/kafka-ui:main
     ports:
       - "8070:8080"
     depends_on:
@@ -142,6 +142,46 @@ services:
     networks:
       - enerlytics
 
+  keycloak-db:
+    image: postgres:18-alpine
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U keycloak -d keycloak" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - enerlytics
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    container_name: keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: keycloak-db
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8091:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data/import/
+    depends_on:
+      - keycloak-db
+    networks:
+      - enerlytics
+
 volumes:
   users_data:
     driver: local
@@ -152,6 +192,10 @@ volumes:
   usages_data:
     driver: local
   alerts_data:
+    driver: local
+  keycloak_data:
+    driver: local
+  keycloak_db_data:
     driver: local
 
 networks:
