@@ -2,5 +2,30 @@ spring:
   application:
     name: api-gateway
 
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, circuitbreakers
+
+resilience4j:
+  circuitbreaker:
+    configs:
+        default:
+          registerHealthIndicator: true
+          slidingWindowType: COUNT_BASED
+          slidingWindowSize: 8
+          failureRateThreshold: 20
+          minimum-number-of-calls: 4
+          waitDurationInOpenState: 5s
+          permittedNumberOfCallsInHalfOpenState: 2
+          automaticTransitionFromOpenToHalfOpenEnabled: true
+
 server:
   port: 9000
