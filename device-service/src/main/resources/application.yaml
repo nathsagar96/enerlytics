@@ -7,7 +7,7 @@ spring:
       enabled: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/devices
+    url: jdbc:postgresql://localhost:5433/devices
     username: postgres
     password: password
 
@@ -19,3 +19,6 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+
+server:
+  port: 8081

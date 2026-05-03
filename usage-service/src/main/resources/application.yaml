@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: usage-service
+
+  kafka:
+    bootstrap-servers: localhost:9094
+    template:
+      default-topic: energy-alerts
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: usage-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            type:
+              mapping: energyUsageEvent:com.enerlytics.events.EnergyUsageEvent
+
+influx:
+  url: http://localhost:8072
+  token: my-token
+  org: enerlytics
+  bucket: usages
+
+user-service:
+  base-url: http://localhost:8080/api/v1/users
+
+device-service:
+  base-url: http://localhost:8081/api/v1/devices
+
+server:
+  port: 8083

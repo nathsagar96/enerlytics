@@ -51,7 +51,7 @@ public class DataSimulator implements CommandLineRunner {
             service.submit(() -> {
                 for (int j = 0; j < requestsForThread; j++) {
                     IngestionRequest request = new IngestionRequest(
-                            random.nextLong(1, 200),
+                            random.nextLong(1, 20),
                             Math.round(random.nextDouble(0.0, 2.0) * 100.0) / 100.0,
                             Instant.now());
                     try {
