@@ -11,7 +11,19 @@ spring:
 
 security:
   excluded:
-    urls: /actuator/**
+    urls: /actuator/**, /swagger-ui.html, /swagger-ui/**, /v3/api-docs/**, /swagger-resources/**, /docs/**
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: user-service
+        url: /docs/user-service
+      - name: device-service
+        url: /docs/device-service
+      - name: ingestion-service
+        url: /docs/ingestion-service
+      - name: insight-service
+        url: /docs/insight-service
 
 management:
   health:

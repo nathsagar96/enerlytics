@@ -1,11 +1,13 @@
 package com.enerlytics.gateways.routes;
 
 import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.uri;
+import static org.springframework.cloud.gateway.server.mvc.filter.FilterFunctions.setPath;
 import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route;
 import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http;
 
 import java.net.URI;
 import org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions;
+import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,15 @@ public class IngestionServiceRoutes {
                 .route(RequestPredicates.path("/fallbackRoute"), _ -> ServerResponse.status(
                                 HttpStatus.SERVICE_UNAVAILABLE)
                         .body("Ingestion Service is not available"))
+                .build();
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> ingestionServiceApiDocs() {
+        return GatewayRouterFunctions.route("ingestion-service-api-docs")
+                .route(RequestPredicates.path("/docs/ingestion-service"), http())
+                .before(uri("http://localhost:8082/v3/api-docs"))
+                .filter(setPath("/v3/api-docs"))
                 .build();
     }
 }
