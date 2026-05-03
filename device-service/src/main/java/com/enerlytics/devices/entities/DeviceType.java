@@ -6,5 +6,21 @@ public enum DeviceType {
     THERMOSTAT,
     LIGHT,
     LOCK,
-    DOORBELL
+    DOORBELL,
+    SMART_PLUG,
+    SOLAR_INVERTER,
+    EV_CHARGER,
+    HVAC,
+    REFRIGERATOR,
+    WASHER,
+    DRYER,
+    DISHWASHER,
+    TV,
+    AIR_PURIFIER,
+    WATER_HEATER,
+    PUMP,
+    MOTOR,
+    GENERATOR,
+    BATTERY_STORAGE,
+    OTHER
 }

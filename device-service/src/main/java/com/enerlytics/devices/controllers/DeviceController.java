@@ -36,7 +36,7 @@ public class DeviceController {
     private final DeviceService service;
 
     @PostMapping
-    @Operation(summary = "Create device")
+    @Operation(summary = "Create device", description = "Registers a new device for a user.")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "201",
@@ -52,7 +52,7 @@ public class DeviceController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get device by id")
+    @Operation(summary = "Get device by id", description = "Retrieves a single device's details by its ID.")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",
@@ -69,17 +69,19 @@ public class DeviceController {
     }
 
     @GetMapping
-    @Operation(summary = "List devices")
-    @ApiResponse(
-            responseCode = "200",
-            description = "Devices fetched",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceResponse.class))))
+    @Operation(summary = "List devices", description = "Returns a list of all registered devices.")
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "Devices fetched",
+                content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceResponse.class))))
+    })
     public ResponseEntity<List<DeviceResponse>> getAllDevices() {
         return ResponseEntity.ok(service.getAllDevices());
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update device")
+    @Operation(summary = "Update device", description = "Updates details of an existing device.")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",
@@ -101,7 +103,7 @@ public class DeviceController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete device")
+    @Operation(summary = "Delete device", description = "Deletes a device record from the system.")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Device deleted"),
         @ApiResponse(
@@ -116,11 +118,15 @@ public class DeviceController {
     }
 
     @GetMapping("/user/{userId}")
-    @Operation(summary = "List devices by user id")
-    @ApiResponse(
-            responseCode = "200",
-            description = "Devices fetched for user",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceResponse.class))))
+    @Operation(
+            summary = "List devices by user id",
+            description = "Retrieves all devices associated with a specific user.")
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "Devices fetched for user",
+                content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceResponse.class))))
+    })
     public ResponseEntity<List<DeviceResponse>> getAllDevicesByUserId(
             @Parameter(description = "User id", example = "1") @PathVariable Long userId) {
         return ResponseEntity.ok(service.getAllDevicesByUserId(userId));

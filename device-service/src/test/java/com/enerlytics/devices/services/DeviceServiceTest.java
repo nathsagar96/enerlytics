@@ -285,4 +285,45 @@ class DeviceServiceTest {
         verify(deviceRepository, times(1)).findById(deviceId);
         verify(deviceRepository, never()).delete(any(Device.class));
     }
+
+    @Test
+    @DisplayName("Should return all devices for a given user ID")
+    void getAllDevicesByUserId_Successful() {
+        // Arrange
+        Long userId = 1L;
+        List<Device> devices = List.of(
+                Device.builder()
+                        .id(1L)
+                        .name("Doorbell")
+                        .type(DeviceType.DOORBELL)
+                        .location("Front Door")
+                        .userId(userId)
+                        .build(),
+                Device.builder()
+                        .id(2L)
+                        .name("Speaker")
+                        .type(DeviceType.SPEAKER)
+                        .location("Bedroom")
+                        .userId(userId)
+                        .build());
+
+        List<DeviceResponse> expectedResponses = List.of(
+                new DeviceResponse(1L, "Doorbell", DeviceType.DOORBELL, "Front Door", userId),
+                new DeviceResponse(2L, "Speaker", DeviceType.SPEAKER, "Bedroom", userId));
+
+        when(deviceRepository.findAllByUserId(userId)).thenReturn(devices);
+        when(deviceMapper.toResponse(devices.get(0))).thenReturn(expectedResponses.get(0));
+        when(deviceMapper.toResponse(devices.get(1))).thenReturn(expectedResponses.get(1));
+
+        // Act
+        List<DeviceResponse> actualResponses = deviceService.getAllDevicesByUserId(userId);
+
+        // Assert
+        assertNotNull(actualResponses);
+        assertEquals(expectedResponses.size(), actualResponses.size());
+        assertEquals(expectedResponses, actualResponses);
+
+        verify(deviceRepository, times(1)).findAllByUserId(userId);
+        verify(deviceMapper, times(2)).toResponse(any(Device.class));
+    }
 }

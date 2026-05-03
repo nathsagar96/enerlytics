@@ -241,4 +241,39 @@ class DeviceControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail").value("Device not found"));
     }
+
+    @Test
+    @DisplayName("Should retrieve all devices by user id successfully and return 200 OK")
+    void getAllDevicesByUserId_Success() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        List<DeviceResponse> devices = List.of(
+                new DeviceResponse(1L, "Speaker", DeviceType.SPEAKER, "Bedroom", userId),
+                new DeviceResponse(2L, "Thermostat", DeviceType.THERMOSTAT, "Hallway", userId));
+        when(deviceService.getAllDevicesByUserId(userId)).thenReturn(devices);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/devices/user/" + userId).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].userId").value(userId))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].userId").value(userId));
+    }
+
+    @Test
+    @DisplayName("Should return an empty list when no devices exist for a user and return 200 OK")
+    void getAllDevicesByUserId_EmptyList() throws Exception {
+        // Arrange
+        Long userId = 99L;
+        when(deviceService.getAllDevicesByUserId(userId)).thenReturn(List.of());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/devices/user/" + userId).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(0));
+    }
 }
