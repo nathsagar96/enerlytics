@@ -111,6 +111,37 @@ services:
     networks:
       - enerlytics
 
+  alerts-db:
+    image: postgres:18-alpine
+    container_name: alerts-db
+    environment:
+      POSTGRES_DB: alerts
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - alerts_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d alerts" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - enerlytics
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    restart: unless-stopped
+    networks:
+      - enerlytics
+
 volumes:
   users_data:
     driver: local
@@ -119,6 +150,8 @@ volumes:
   kafka_data:
     driver: local
   usages_data:
+    driver: local
+  alerts_data:
     driver: local
 
 networks:
