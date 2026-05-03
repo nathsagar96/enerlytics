@@ -51,4 +51,9 @@ public class DeviceController {
         service.deleteDevice(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<DeviceResponse>> getAllDevicesByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.getAllDevicesByUserId(userId));
+    }
 }

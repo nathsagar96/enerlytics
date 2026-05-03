@@ -51,4 +51,9 @@ public class DeviceService {
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Device not found with id: " + id));
     }
+
+    public List<DeviceResponse> getAllDevicesByUserId(Long userId) {
+        List<Device> devices = repository.findAllByUserId(userId);
+        return devices.stream().map(mapper::toResponse).toList();
+    }
 }

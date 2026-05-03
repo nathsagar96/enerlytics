@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: insight-service
+
+  ai:
+    ollama:
+      chat:
+        options:
+          models: qwen2.5-coder
+      init:
+        pull-model-strategy: never
+
+usage-service:
+  base-url: http://localhost:8083/api/v1/usages
+
+server:
+  port: 8085

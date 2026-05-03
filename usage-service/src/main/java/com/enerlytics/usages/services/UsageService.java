@@ -7,6 +7,7 @@ import com.enerlytics.usages.clients.UserClient;
 import com.enerlytics.usages.dtos.DeviceEnergy;
 import com.enerlytics.usages.dtos.DeviceResponse;
 import com.enerlytics.usages.dtos.UserResponse;
+import com.enerlytics.usages.dtos.responses.UsageResponse;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.QueryApi;
 import com.influxdb.client.domain.WritePrecision;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -166,5 +168,83 @@ public class UsageService {
                         threshold);
             }
         }
+    }
+
+    public UsageResponse getXDaysUsageForUser(Long userId, int days) {
+        log.info("Getting usage for userId {} over past {} days", userId, days);
+        List<DeviceResponse> devices = deviceClient.getAllDevicesForUser(userId);
+
+        if (devices == null || devices.isEmpty()) {
+            return new UsageResponse(userId, devices);
+        }
+
+        List<String> deviceIdStrings = devices.stream()
+                .map(DeviceResponse::id)
+                .filter(Objects::nonNull)
+                .map(String::valueOf)
+                .toList();
+
+        Instant now = Instant.now();
+        Instant start = now.minus(days, ChronoUnit.DAYS);
+
+        final String deviceFilter = deviceIdStrings.stream()
+                .map(idStr -> String.format("r[\"deviceId\"] == \"%s\"", idStr))
+                .collect(Collectors.joining(" or "));
+
+        String fluxQuery = String.format("""
+                from(bucket: "%s")
+                  |> range(start: time(v: "%s"), stop: time(v: "%s"))
+                  |> filter(fn: (r) => r["_measurement"] == "energy_usage")
+                  |> filter(fn: (r) => r["_field"] == "energyConsumed")
+                  |> filter(fn: (r) => %s)
+                  |> group(columns: ["deviceId"])
+                  |> sum(column: "_value")
+                """, dbBucket, start.toString(), now, deviceFilter);
+
+        final Map<Long, Double> aggregatedMap = new HashMap<>();
+
+        try {
+            QueryApi queryApi = dbClient.getQueryApi();
+            List<FluxTable> tables = queryApi.query(fluxQuery, dbOrg);
+
+            for (FluxTable table : tables) {
+                for (FluxRecord record : table.getRecords()) {
+                    Object deviceIdObj = record.getValueByKey("deviceId");
+                    String deviceIdStr = deviceIdObj == null ? null : deviceIdObj.toString();
+                    if (deviceIdStr == null) continue;
+
+                    Double energyConsumed = record.getValueByKey("_value") instanceof Number
+                            ? ((Number) record.getValueByKey("_value")).doubleValue()
+                            : 0.0;
+
+                    try {
+                        Long deviceId = Long.valueOf(deviceIdStr);
+                        aggregatedMap.put(deviceId, aggregatedMap.getOrDefault(deviceId, 0.0) + energyConsumed);
+                    } catch (NumberFormatException nfe) {
+                        log.warn("Failed to parse deviceId from flux record: {}", deviceIdStr);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to query InfluxDB for user {} usage over {} days: {}", userId, days, e.getMessage());
+            // set aggregatedConsumption to 0.0 on error
+            devices.forEach(d -> d.withEnergyConsumed(0.0));
+            return new UsageResponse(userId, null);
+        }
+
+        // populate aggregated energy consumed per device
+        for (DeviceResponse device : devices) {
+            if (device == null || device.id() == null) continue;
+            device.withEnergyConsumed(aggregatedMap.getOrDefault(device.id(), 0.0));
+        }
+
+        log.info("Aggregated energy consumption for userId {}: {}", userId, aggregatedMap);
+
+        List<DeviceResponse> resultDevices = devices.stream()
+                .map(d -> new DeviceResponse(
+                        d.id(), d.name(), d.deviceType(), d.location(), d.userId(), d.energyConsumed()))
+                .toList();
+
+        return new UsageResponse(userId, resultDevices);
     }
 }
