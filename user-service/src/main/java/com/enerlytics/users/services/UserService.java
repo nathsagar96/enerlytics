@@ -19,29 +19,29 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository repository;
-    private final UserMapper mapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
         log.info("Creating user with email: {}", request.email());
         validateEmailForCreate(request.email());
-        User user = mapper.toEntity(request);
-        User savedUser = repository.save(user);
+        User user = userMapper.toEntity(request);
+        User savedUser = userRepository.save(user);
         log.debug("User saved with id: {}", savedUser.getId());
-        return mapper.toResponse(savedUser);
+        return userMapper.toResponse(savedUser);
     }
 
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
         log.info("Fetching user with id: {}", id);
-        return mapper.toResponse(findUserById(id));
+        return userMapper.toResponse(findUserById(id));
     }
 
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         log.info("Fetching all users");
-        return repository.findAll().stream().map(mapper::toResponse).toList();
+        return userRepository.findAll().stream().map(userMapper::toResponse).toList();
     }
 
     @Transactional
@@ -51,33 +51,33 @@ public class UserService {
         if (request.email() != null) {
             validateEmailForUpdate(request.email(), id);
         }
-        mapper.updateEntity(user, request);
-        User updatedUser = repository.save(user);
+        userMapper.updateEntity(user, request);
+        User updatedUser = userRepository.save(user);
         log.debug("User updated with id: {}", updatedUser.getId());
-        return mapper.toResponse(updatedUser);
+        return userMapper.toResponse(updatedUser);
     }
 
     @Transactional
     public void deleteUser(Long id) {
         log.info("Deleting user with id: {}", id);
         User user = findUserById(id);
-        repository.delete(user);
+        userRepository.delete(user);
     }
 
     private User findUserById(Long id) {
-        return repository
+        return userRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     private void validateEmailForCreate(String email) {
-        if (repository.existsByEmail(email)) {
+        if (userRepository.existsByEmail(email)) {
             throw new DuplicateResourceException("User with email already exists: " + email);
         }
     }
 
     private void validateEmailForUpdate(String email, Long id) {
-        if (repository.existsByEmailAndIdNot(email, id)) {
+        if (userRepository.existsByEmailAndIdNot(email, id)) {
             throw new DuplicateResourceException("User with email already exists: " + email);
         }
     }

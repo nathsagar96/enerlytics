@@ -53,7 +53,7 @@ class UserServiceTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .address("123 Main St")
-                .alerting(true)
+                .alertingEnabled(true)
                 .energyAlertingThreshold(100.0)
                 .build();
 
@@ -109,7 +109,7 @@ class UserServiceTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .address("123 Main St")
-                .alerting(true)
+                .alertingEnabled(true)
                 .energyAlertingThreshold(100.0)
                 .build();
 
@@ -160,7 +160,7 @@ class UserServiceTest {
                         .lastName("Doe")
                         .email("john.doe@example.com")
                         .address("123 Main St")
-                        .alerting(true)
+                        .alertingEnabled(true)
                         .energyAlertingThreshold(100.0)
                         .build(),
                 User.builder()
@@ -169,7 +169,7 @@ class UserServiceTest {
                         .lastName("Smith")
                         .email("jane.smith@example.com")
                         .address("456 Elm St")
-                        .alerting(false)
+                        .alertingEnabled(false)
                         .energyAlertingThreshold(150.0)
                         .build());
 
@@ -224,7 +224,7 @@ class UserServiceTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .address("123 Main St")
-                .alerting(true)
+                .alertingEnabled(true)
                 .energyAlertingThreshold(100.0)
                 .build();
 
@@ -234,7 +234,7 @@ class UserServiceTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .address("456 Elm St")
-                .alerting(false)
+                .alertingEnabled(false)
                 .energyAlertingThreshold(120.0)
                 .build();
 
@@ -271,7 +271,7 @@ class UserServiceTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .address("123 Main St")
-                .alerting(true)
+                .alertingEnabled(true)
                 .energyAlertingThreshold(100.0)
                 .build();
 
@@ -281,7 +281,7 @@ class UserServiceTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .address("456 Elm St")
-                .alerting(false)
+                .alertingEnabled(false)
                 .energyAlertingThreshold(120.0)
                 .build();
 
@@ -342,7 +342,7 @@ class UserServiceTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .address("123 Main St")
-                .alerting(true)
+                .alertingEnabled(true)
                 .energyAlertingThreshold(100.0)
                 .build();
 
@@ -374,7 +374,7 @@ class UserServiceTest {
                 .lastName("Doe")
                 .email("john.doe@example.com")
                 .address("123 Main St")
-                .alerting(true)
+                .alertingEnabled(true)
                 .energyAlertingThreshold(100.0)
                 .build();
 

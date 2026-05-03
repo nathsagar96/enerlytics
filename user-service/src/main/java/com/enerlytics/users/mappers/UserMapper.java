@@ -15,7 +15,7 @@ public class UserMapper {
                 .lastName(request.lastName())
                 .email(request.email())
                 .address(request.address())
-                .alerting(request.alerting())
+                .alertingEnabled(request.alertingEnabled())
                 .energyAlertingThreshold(request.energyAlertingThreshold())
                 .build();
     }
@@ -33,8 +33,8 @@ public class UserMapper {
         if (request.address() != null) {
             user.setAddress(request.address());
         }
-        if (request.alerting() != null) {
-            user.setAlerting(request.alerting());
+        if (request.alertingEnabled() != null) {
+            user.setAlertingEnabled(request.alertingEnabled());
         }
         if (request.energyAlertingThreshold() != null) {
             user.setEnergyAlertingThreshold(request.energyAlertingThreshold());
@@ -48,7 +48,7 @@ public class UserMapper {
                 user.getLastName(),
                 user.getEmail(),
                 user.getAddress(),
-                user.isAlerting(),
+                user.isAlertingEnabled(),
                 user.getEnergyAlertingThreshold());
     }
 }

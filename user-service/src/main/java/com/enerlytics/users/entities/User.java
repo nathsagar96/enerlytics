@@ -37,8 +37,8 @@ public class User {
     private String address;
 
     @Builder.Default
-    @Column(nullable = false)
-    private boolean alerting = false;
+    @Column(name = "alerting_enabled", nullable = false)
+    private boolean alertingEnabled = false;
 
     @Builder.Default
     @Column(name = "energy_alerting_threshold", nullable = false)

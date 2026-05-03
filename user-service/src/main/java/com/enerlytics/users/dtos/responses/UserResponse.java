@@ -8,5 +8,5 @@ public record UserResponse(
         @Schema(example = "Shah") String lastName,
         @Schema(example = "ava.shah@example.com") String email,
         @Schema(example = "221B Baker Street") String address,
-        @Schema(example = "true") Boolean alerting,
+        @Schema(example = "true") Boolean alertingEnabled,
         @Schema(example = "18.5") Double energyAlertingThreshold) {}

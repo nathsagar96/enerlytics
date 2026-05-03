@@ -54,7 +54,7 @@ class UserControllerTest {
                                 "lastName": "Doe",
                                 "email": "john.doe@example.com",
                                 "address": "123 Main St",
-                                "alerting": true,
+                                "alertingEnabled": true,
                                 "energyAlertingThreshold": 100.0
                             }
                         """))
@@ -65,7 +65,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.lastName").value("Doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"))
                 .andExpect(jsonPath("$.address").value("123 Main St"))
-                .andExpect(jsonPath("$.alerting").value(true))
+                .andExpect(jsonPath("$.alertingEnabled").value(true))
                 .andExpect(jsonPath("$.energyAlertingThreshold").value(100.0));
     }
 
@@ -80,7 +80,7 @@ class UserControllerTest {
                                 "lastName": "Doe",
                                 "email": "john.doe@example.com",
                                 "address": "123 Main St",
-                                "alerting": true,
+                                "alertingEnabled": true,
                                 "energyAlertingThreshold": 100.0
                             }
                         """))
@@ -101,7 +101,7 @@ class UserControllerTest {
                                 "lastName": "Doe",
                                 "email": "invalid_email",
                                 "address": "123 Main St",
-                                "alerting": true,
+                                "alertingEnabled": true,
                                 "energyAlertingThreshold": 100.0
                             }
                         """))
@@ -122,7 +122,7 @@ class UserControllerTest {
                                 "lastName": "Doe",
                                 "email": "john.doe@example.com",
                                 "address": "123 Main St",
-                                "alerting": true,
+                                "alertingEnabled": true,
                                 "energyAlertingThreshold": -10.0
                             }
                         """))
@@ -147,7 +147,7 @@ class UserControllerTest {
                                 "lastName": "Doe",
                                 "email": "john.doe@example.com",
                                 "address": "123 Main St",
-                                "alerting": true,
+                                "alertingEnabled": true,
                                 "energyAlertingThreshold": 100.0
                             }
                         """))
@@ -173,7 +173,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.lastName").value("Doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"))
                 .andExpect(jsonPath("$.address").value("123 Main St"))
-                .andExpect(jsonPath("$.alerting").value(true))
+                .andExpect(jsonPath("$.alertingEnabled").value(true))
                 .andExpect(jsonPath("$.energyAlertingThreshold").value(100.0));
     }
 
@@ -248,7 +248,7 @@ class UserControllerTest {
                                 "lastName": "Smith",
                                 "email": "jane.smith@example.com",
                                 "address": "456 Elm St",
-                                "alerting": false,
+                                "alertingEnabled": false,
                                 "energyAlertingThreshold": 200.0
                             }
                         """))
@@ -259,7 +259,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.lastName").value("Smith"))
                 .andExpect(jsonPath("$.email").value("jane.smith@example.com"))
                 .andExpect(jsonPath("$.address").value("456 Elm St"))
-                .andExpect(jsonPath("$.alerting").value(false))
+                .andExpect(jsonPath("$.alertingEnabled").value(false))
                 .andExpect(jsonPath("$.energyAlertingThreshold").value(200.0));
     }
 
@@ -275,7 +275,7 @@ class UserControllerTest {
                                 "lastName": "Smith",
                                 "email": "invalid_email",
                                 "address": "456 Elm St",
-                                "alerting": false,
+                                "alertingEnabled": false,
                                 "energyAlertingThreshold": 200.0
                             }
                         """))
@@ -296,7 +296,7 @@ class UserControllerTest {
                                 "lastName": "Smith",
                                 "email": "jane.smith@example.com",
                                 "address": "456 Elm St",
-                                "alerting": false,
+                                "alertingEnabled": false,
                                 "energyAlertingThreshold": -20.0
                             }
                         """))
@@ -324,7 +324,7 @@ class UserControllerTest {
                                 "lastName": "Smith",
                                 "email": "jane.smith@example.com",
                                 "address": "456 Elm St",
-                                "alerting": false,
+                                "alertingEnabled": false,
                                 "energyAlertingThreshold": 200.0
                             }
                         """))
@@ -351,7 +351,7 @@ class UserControllerTest {
                                 "lastName": "Smith",
                                 "email": "jane.smith@example.com",
                                 "address": "456 Elm St",
-                                "alerting": false,
+                                "alertingEnabled": false,
                                 "energyAlertingThreshold": 200.0
                             }
                         """))

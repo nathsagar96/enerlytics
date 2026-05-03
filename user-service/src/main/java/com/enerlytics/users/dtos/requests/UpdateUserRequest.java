@@ -9,5 +9,5 @@ public record UpdateUserRequest(
         @Schema(example = "Shah") String lastName,
         @Schema(example = "ava.shah@example.com") @Email String email,
         @Schema(example = "42 Wallaby Way") String address,
-        @Schema(example = "false") Boolean alerting,
+        @Schema(example = "false") Boolean alertingEnabled,
         @Schema(example = "22.0") @PositiveOrZero Double energyAlertingThreshold) {}

@@ -13,5 +13,5 @@ public record CreateUserRequest(
         String email,
 
         @Schema(example = "221B Baker Street") String address,
-        @Schema(example = "true") Boolean alerting,
+        @Schema(example = "true") Boolean alertingEnabled,
         @Schema(example = "18.5") @PositiveOrZero Double energyAlertingThreshold) {}

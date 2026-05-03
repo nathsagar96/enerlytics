@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ConditionalOnProperty(name = "app.init-data", havingValue = "true")
 public class DataInitializer implements CommandLineRunner {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
 
     private static final List<String> FIRST_NAMES =
             List.of("John", "Jane", "Michael", "Emily", "David", "Sarah", "Robert", "Jennifer", "William", "Lisa");
@@ -39,7 +39,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String @NonNull ... args) {
-        if (repository.count() == 0) {
+        if (userRepository.count() == 0) {
             initializeUsers();
         } else {
             log.info("Data initialization skipped: users already exist in the database.");
@@ -56,12 +56,12 @@ public class DataInitializer implements CommandLineRunner {
                         .email(FIRST_NAMES.get(i).toLowerCase() + "."
                                 + LAST_NAMES.get(i).toLowerCase() + "@example.com")
                         .address(ADDRESSES.get(i))
-                        .alerting(i % 2 == 0)
+                        .alertingEnabled(i % 2 == 0)
                         .energyAlertingThreshold(50.0 + (i * 10.0))
                         .build())
                 .toList();
 
-        repository.saveAll(users);
+        userRepository.saveAll(users);
         log.info("Successfully initialized {} users.", users.size());
     }
 }

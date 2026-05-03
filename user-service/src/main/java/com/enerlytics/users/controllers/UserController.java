@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Users", description = "Operations for creating and managing users")
 public class UserController {
 
-    private final UserService service;
+    private final UserService userService;
 
     @PostMapping
     @Operation(summary = "Create user", description = "Creates a new user profile.")
@@ -48,7 +48,7 @@ public class UserController {
                 content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.createUser(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
     }
 
     @GetMapping("/{id}")
@@ -65,7 +65,7 @@ public class UserController {
     })
     public ResponseEntity<UserResponse> getUserById(
             @Parameter(description = "User id", example = "1") @PathVariable Long id) {
-        return ResponseEntity.ok(service.getUserById(id));
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @GetMapping
@@ -75,7 +75,7 @@ public class UserController {
             description = "Users fetched",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))))
     public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(service.getAllUsers());
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @PutMapping("/{id}")
@@ -97,7 +97,7 @@ public class UserController {
     public ResponseEntity<UserResponse> updateUser(
             @Parameter(description = "User id", example = "1") @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request) {
-        return ResponseEntity.ok(service.updateUser(id, request));
+        return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -110,7 +110,7 @@ public class UserController {
                 content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public ResponseEntity<Void> deleteUser(@Parameter(description = "User id", example = "1") @PathVariable Long id) {
-        service.deleteUser(id);
+        userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 }
