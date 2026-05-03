@@ -12,7 +12,7 @@ public class DeviceMapper {
     public Device toEntity(CreateDeviceRequest request) {
         return Device.builder()
                 .name(request.name())
-                .type(request.deviceType())
+                .deviceType(request.deviceType())
                 .location(request.location())
                 .userId(request.userId())
                 .build();
@@ -32,6 +32,6 @@ public class DeviceMapper {
 
     public DeviceResponse toResponse(Device device) {
         return new DeviceResponse(
-                device.getId(), device.getName(), device.getType(), device.getLocation(), device.getUserId());
+                device.getId(), device.getName(), device.getDeviceType(), device.getLocation(), device.getUserId());
     }
 }

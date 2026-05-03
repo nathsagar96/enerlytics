@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Devices", description = "Operations for creating and managing devices")
 public class DeviceController {
 
-    private final DeviceService service;
+    private final DeviceService deviceService;
 
     @PostMapping
     @Operation(summary = "Create device", description = "Registers a new device for a user.")
@@ -48,7 +48,7 @@ public class DeviceController {
                 content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public ResponseEntity<DeviceResponse> createDevice(@Valid @RequestBody CreateDeviceRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.createDevice(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(deviceService.createDevice(request));
     }
 
     @GetMapping("/{id}")
@@ -65,7 +65,7 @@ public class DeviceController {
     })
     public ResponseEntity<DeviceResponse> getDeviceById(
             @Parameter(description = "Device id", example = "1") @PathVariable Long id) {
-        return ResponseEntity.ok(service.getDeviceById(id));
+        return ResponseEntity.ok(deviceService.getDeviceById(id));
     }
 
     @GetMapping
@@ -77,7 +77,7 @@ public class DeviceController {
                 content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceResponse.class))))
     })
     public ResponseEntity<List<DeviceResponse>> getAllDevices() {
-        return ResponseEntity.ok(service.getAllDevices());
+        return ResponseEntity.ok(deviceService.getAllDevices());
     }
 
     @PutMapping("/{id}")
@@ -99,7 +99,7 @@ public class DeviceController {
     public ResponseEntity<DeviceResponse> updateDevice(
             @Parameter(description = "Device id", example = "1") @PathVariable Long id,
             @Valid @RequestBody UpdateDeviceRequest request) {
-        return ResponseEntity.ok(service.updateDevice(id, request));
+        return ResponseEntity.ok(deviceService.updateDevice(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -113,7 +113,7 @@ public class DeviceController {
     })
     public ResponseEntity<Void> deleteDevice(
             @Parameter(description = "Device id", example = "1") @PathVariable Long id) {
-        service.deleteDevice(id);
+        deviceService.deleteDevice(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -129,6 +129,6 @@ public class DeviceController {
     })
     public ResponseEntity<List<DeviceResponse>> getAllDevicesByUserId(
             @Parameter(description = "User id", example = "1") @PathVariable Long userId) {
-        return ResponseEntity.ok(service.getAllDevicesByUserId(userId));
+        return ResponseEntity.ok(deviceService.getAllDevicesByUserId(userId));
     }
 }

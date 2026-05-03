@@ -50,7 +50,7 @@ class DeviceServiceTest {
         Device deviceEntity = Device.builder()
                 .id(1L)
                 .name("Living Room Camera")
-                .type(DeviceType.CAMERA)
+                .deviceType(DeviceType.CAMERA)
                 .location("Living Room")
                 .userId(1L)
                 .build();
@@ -83,7 +83,7 @@ class DeviceServiceTest {
         Device deviceEntity = Device.builder()
                 .id(deviceId)
                 .name("Thermostat")
-                .type(DeviceType.THERMOSTAT)
+                .deviceType(DeviceType.THERMOSTAT)
                 .location("Hallway")
                 .userId(2L)
                 .build();
@@ -131,14 +131,14 @@ class DeviceServiceTest {
                 Device.builder()
                         .id(1L)
                         .name("Doorbell")
-                        .type(DeviceType.DOORBELL)
+                        .deviceType(DeviceType.DOORBELL)
                         .location("Front Door")
                         .userId(1L)
                         .build(),
                 Device.builder()
                         .id(2L)
                         .name("Speaker")
-                        .type(DeviceType.SPEAKER)
+                        .deviceType(DeviceType.SPEAKER)
                         .location("Bedroom")
                         .userId(1L)
                         .build());
@@ -190,7 +190,7 @@ class DeviceServiceTest {
         Device existingDevice = Device.builder()
                 .id(deviceId)
                 .name("Indoor Camera")
-                .type(DeviceType.CAMERA)
+                .deviceType(DeviceType.CAMERA)
                 .location("Kitchen")
                 .userId(1L)
                 .build();
@@ -198,7 +198,7 @@ class DeviceServiceTest {
         Device updatedDevice = Device.builder()
                 .id(deviceId)
                 .name("Outdoor Camera")
-                .type(DeviceType.CAMERA)
+                .deviceType(DeviceType.CAMERA)
                 .location("Garage")
                 .userId(3L)
                 .build();
@@ -252,7 +252,7 @@ class DeviceServiceTest {
         Device device = Device.builder()
                 .id(deviceId)
                 .name("Light")
-                .type(DeviceType.LIGHT)
+                .deviceType(DeviceType.LIGHT)
                 .location("Porch")
                 .userId(2L)
                 .build();
@@ -295,14 +295,14 @@ class DeviceServiceTest {
                 Device.builder()
                         .id(1L)
                         .name("Doorbell")
-                        .type(DeviceType.DOORBELL)
+                        .deviceType(DeviceType.DOORBELL)
                         .location("Front Door")
                         .userId(userId)
                         .build(),
                 Device.builder()
                         .id(2L)
                         .name("Speaker")
-                        .type(DeviceType.SPEAKER)
+                        .deviceType(DeviceType.SPEAKER)
                         .location("Bedroom")
                         .userId(userId)
                         .build());

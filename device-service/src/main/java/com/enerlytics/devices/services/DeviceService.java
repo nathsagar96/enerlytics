@@ -17,50 +17,50 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class DeviceService {
-    private final DeviceRepository repository;
-    private final DeviceMapper mapper;
+    private final DeviceRepository deviceRepository;
+    private final DeviceMapper deviceMapper;
 
     @Transactional
     public DeviceResponse createDevice(CreateDeviceRequest request) {
         log.info("Creating new device: {} for user: {}", request.name(), request.userId());
-        Device device = mapper.toEntity(request);
-        Device savedDevice = repository.save(device);
-        log.debug("Device saved with id: {}", savedDevice.getId());
-        return mapper.toResponse(savedDevice);
+        Device deviceEntity = deviceMapper.toEntity(request);
+        Device savedDeviceEntity = deviceRepository.save(deviceEntity);
+        log.debug("Device saved with id: {}", savedDeviceEntity.getId());
+        return deviceMapper.toResponse(savedDeviceEntity);
     }
 
     @Transactional(readOnly = true)
     public DeviceResponse getDeviceById(Long id) {
         log.info("Fetching device with id: {}", id);
-        return mapper.toResponse(findById(id));
+        return deviceMapper.toResponse(findById(id));
     }
 
     @Transactional(readOnly = true)
     public List<DeviceResponse> getAllDevices() {
         log.info("Fetching all devices");
-        return repository.findAll().stream().map(mapper::toResponse).toList();
+        return deviceRepository.findAll().stream().map(deviceMapper::toResponse).toList();
     }
 
     @Transactional
     public DeviceResponse updateDevice(Long id, UpdateDeviceRequest request) {
         log.info("Updating device with id: {}", id);
-        Device device = findById(id);
-        mapper.updateEntity(device, request);
-        Device updatedDevice = repository.save(device);
+        Device deviceEntity = findById(id);
+        deviceMapper.updateEntity(deviceEntity, request);
+        Device updatedDeviceEntity = deviceRepository.save(deviceEntity);
         log.debug("Device with id: {} updated successfully", id);
-        return mapper.toResponse(updatedDevice);
+        return deviceMapper.toResponse(updatedDeviceEntity);
     }
 
     @Transactional
     public void deleteDevice(Long id) {
         log.info("Deleting device with id: {}", id);
-        Device device = findById(id);
-        repository.delete(device);
+        Device deviceEntity = findById(id);
+        deviceRepository.delete(deviceEntity);
         log.debug("Device with id: {} deleted successfully", id);
     }
 
     private Device findById(Long id) {
-        return repository.findById(id).orElseThrow(() -> {
+        return deviceRepository.findById(id).orElseThrow(() -> {
             log.error("Device not found with id: {}", id);
             return new ResourceNotFoundException("Device not found with id: " + id);
         });
@@ -68,8 +68,8 @@ public class DeviceService {
 
     public List<DeviceResponse> getAllDevicesByUserId(Long userId) {
         log.info("Fetching all devices for user id: {}", userId);
-        List<Device> devices = repository.findAllByUserId(userId);
-        log.debug("Found {} devices for user id: {}", devices.size(), userId);
-        return devices.stream().map(mapper::toResponse).toList();
+        List<Device> deviceEntities = deviceRepository.findAllByUserId(userId);
+        log.debug("Found {} devices for user id: {}", deviceEntities.size(), userId);
+        return deviceEntities.stream().map(deviceMapper::toResponse).toList();
     }
 }

@@ -18,12 +18,12 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "app.init-data", havingValue = "true")
 public class DataInitializer implements CommandLineRunner {
 
-    private final DeviceRepository repository;
+    private final DeviceRepository deviceRepository;
     private final Random random = new Random();
 
     @Override
     public void run(String @NonNull ... args) {
-        if (repository.count() == 0) {
+        if (deviceRepository.count() == 0) {
             initializeDevices();
         } else {
             log.info("Devices already present, skipping initialization.");
@@ -55,14 +55,14 @@ public class DataInitializer implements CommandLineRunner {
                 createDevice("Garden Light", DeviceType.LIGHT, "Garden"),
                 createDevice("Master Bedroom AC", DeviceType.THERMOSTAT, "Bedroom"));
 
-        repository.saveAll(devices);
+        deviceRepository.saveAll(devices);
         log.info("Sample devices initialized successfully (Count: {}).", devices.size());
     }
 
     private Device createDevice(String name, DeviceType type, String location) {
         return Device.builder()
                 .name(name)
-                .type(type)
+                .deviceType(type)
                 .location(location)
                 .userId(random.nextInt(10) + 1L)
                 .build();

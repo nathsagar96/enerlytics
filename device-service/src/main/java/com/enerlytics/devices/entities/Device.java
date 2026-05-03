@@ -31,8 +31,8 @@ public class Device {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DeviceType type;
+    @Column(name = "type", nullable = false)
+    private DeviceType deviceType;
 
     @Column(nullable = false)
     private String location;
