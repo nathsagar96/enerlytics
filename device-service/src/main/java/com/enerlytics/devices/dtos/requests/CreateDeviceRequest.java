@@ -8,7 +8,12 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public record CreateDeviceRequest(
-        @Schema(example = "Living Room Thermostat") @NotBlank @Size(max = 255) String name,
+        @Schema(example = "Living Room Thermostat") @NotBlank @Size(max = 255)
+        String name,
+
         @Schema(example = "THERMOSTAT") @NotNull DeviceType deviceType,
-        @Schema(example = "Living Room") @NotBlank @Size(max = 255) String location,
+
+        @Schema(example = "Living Room") @NotBlank @Size(max = 255)
+        String location,
+
         @Schema(example = "1") @NotNull @Positive Long userId) {}

@@ -9,9 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ProblemDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,8 +29,14 @@ public class InsightController {
     @GetMapping("/saving-tips/{userId}")
     @Operation(summary = "Get saving tips", description = "Returns personalized energy-saving tips for a user.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Saving tips generated", content = @Content(schema = @Schema(implementation = InsightResponse.class))),
-            @ApiResponse(responseCode = "500", description = "Insight generation failed", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(
+                responseCode = "200",
+                description = "Saving tips generated",
+                content = @Content(schema = @Schema(implementation = InsightResponse.class))),
+        @ApiResponse(
+                responseCode = "500",
+                description = "Insight generation failed",
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public ResponseEntity<InsightResponse> getSavingTips(
             @Parameter(description = "User id", example = "1") @PathVariable Long userId) {
@@ -40,8 +46,14 @@ public class InsightController {
     @GetMapping("/overview/{userId}")
     @Operation(summary = "Get usage overview", description = "Returns an AI-generated overview for recent usage.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Overview generated", content = @Content(schema = @Schema(implementation = InsightResponse.class))),
-            @ApiResponse(responseCode = "500", description = "Insight generation failed", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(
+                responseCode = "200",
+                description = "Overview generated",
+                content = @Content(schema = @Schema(implementation = InsightResponse.class))),
+        @ApiResponse(
+                responseCode = "500",
+                description = "Insight generation failed",
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public ResponseEntity<InsightResponse> getOverview(
             @Parameter(description = "User id", example = "1") @PathVariable Long userId) {

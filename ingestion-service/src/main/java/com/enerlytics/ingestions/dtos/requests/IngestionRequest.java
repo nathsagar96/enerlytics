@@ -11,6 +11,5 @@ public record IngestionRequest(
         @Schema(example = "101") @NotNull @Positive Long deviceId,
         @Schema(example = "2.45") @NotNull @PositiveOrZero Double energyConsumed,
 
-        @Schema(example = "2026-05-03T10:15:30Z")
-        @JsonFormat(shape = JsonFormat.Shape.STRING) @NotNull
+        @Schema(example = "2026-05-03T10:15:30Z") @JsonFormat(shape = JsonFormat.Shape.STRING) @NotNull
         Instant timestamp) {}
