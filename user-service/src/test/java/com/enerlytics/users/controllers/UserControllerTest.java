@@ -41,10 +41,6 @@ class UserControllerTest {
     @Test
     @DisplayName("Should create a user successfully and return 201 Created")
     void createUser_Success() throws Exception {
-        // Arrange
-        CreateUserRequest request =
-                new CreateUserRequest("John", "Doe", "john.doe@example.com", "123 Main St", true, 100.0);
-
         UserResponse response = new UserResponse(1L, "John", "Doe", "john.doe@example.com", "123 Main St", true, 100.0);
 
         when(userService.createUser(any(CreateUserRequest.class))).thenReturn(response);
@@ -53,15 +49,15 @@ class UserControllerTest {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "John",
-                                        "lastName": "Doe",
-                                        "email": "john.doe@example.com",
-                                        "address": "123 Main St",
-                                        "alerting": true,
-                                        "energyAlertingThreshold": 100.0
-                                    }
-                                """))
+                            {
+                                "firstName": "John",
+                                "lastName": "Doe",
+                                "email": "john.doe@example.com",
+                                "address": "123 Main St",
+                                "alerting": true,
+                                "energyAlertingThreshold": 100.0
+                            }
+                        """))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
@@ -80,14 +76,14 @@ class UserControllerTest {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "lastName": "Doe",
-                                        "email": "john.doe@example.com",
-                                        "address": "123 Main St",
-                                        "alerting": true,
-                                        "energyAlertingThreshold": 100.0
-                                    }
-                                """))
+                            {
+                                "lastName": "Doe",
+                                "email": "john.doe@example.com",
+                                "address": "123 Main St",
+                                "alerting": true,
+                                "energyAlertingThreshold": 100.0
+                            }
+                        """))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.errors").isMap());
@@ -100,15 +96,15 @@ class UserControllerTest {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "John",
-                                        "lastName": "Doe",
-                                        "email": "invalid_email",
-                                        "address": "123 Main St",
-                                        "alerting": true,
-                                        "energyAlertingThreshold": 100.0
-                                    }
-                                """))
+                            {
+                                "firstName": "John",
+                                "lastName": "Doe",
+                                "email": "invalid_email",
+                                "address": "123 Main St",
+                                "alerting": true,
+                                "energyAlertingThreshold": 100.0
+                            }
+                        """))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.errors").isMap());
@@ -121,15 +117,15 @@ class UserControllerTest {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "John",
-                                        "lastName": "Doe",
-                                        "email": "john.doe@example.com",
-                                        "address": "123 Main St",
-                                        "alerting": true,
-                                        "energyAlertingThreshold": -10.0
-                                    }
-                                """))
+                            {
+                                "firstName": "John",
+                                "lastName": "Doe",
+                                "email": "john.doe@example.com",
+                                "address": "123 Main St",
+                                "alerting": true,
+                                "energyAlertingThreshold": -10.0
+                            }
+                        """))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.errors.energyAlertingThreshold").exists());
@@ -146,15 +142,15 @@ class UserControllerTest {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "John",
-                                        "lastName": "Doe",
-                                        "email": "john.doe@example.com",
-                                        "address": "123 Main St",
-                                        "alerting": true,
-                                        "energyAlertingThreshold": 100.0
-                                    }
-                                """))
+                            {
+                                "firstName": "John",
+                                "lastName": "Doe",
+                                "email": "john.doe@example.com",
+                                "address": "123 Main St",
+                                "alerting": true,
+                                "energyAlertingThreshold": 100.0
+                            }
+                        """))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail").value("User with email already exists: john.doe@example.com"));
@@ -247,15 +243,15 @@ class UserControllerTest {
         mockMvc.perform(put("/api/v1/users/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "Jane",
-                                        "lastName": "Smith",
-                                        "email": "jane.smith@example.com",
-                                        "address": "456 Elm St",
-                                        "alerting": false,
-                                        "energyAlertingThreshold": 200.0
-                                    }
-                                """))
+                            {
+                                "firstName": "Jane",
+                                "lastName": "Smith",
+                                "email": "jane.smith@example.com",
+                                "address": "456 Elm St",
+                                "alerting": false,
+                                "energyAlertingThreshold": 200.0
+                            }
+                        """))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
@@ -274,15 +270,15 @@ class UserControllerTest {
         mockMvc.perform(put("/api/v1/users/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "Jane",
-                                        "lastName": "Smith",
-                                        "email": "invalid_email",
-                                        "address": "456 Elm St",
-                                        "alerting": false,
-                                        "energyAlertingThreshold": 200.0
-                                    }
-                                """))
+                            {
+                                "firstName": "Jane",
+                                "lastName": "Smith",
+                                "email": "invalid_email",
+                                "address": "456 Elm St",
+                                "alerting": false,
+                                "energyAlertingThreshold": 200.0
+                            }
+                        """))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.errors").isMap());
@@ -295,15 +291,15 @@ class UserControllerTest {
         mockMvc.perform(put("/api/v1/users/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "Jane",
-                                        "lastName": "Smith",
-                                        "email": "jane.smith@example.com",
-                                        "address": "456 Elm St",
-                                        "alerting": false,
-                                        "energyAlertingThreshold": -20.0
-                                    }
-                                """))
+                            {
+                                "firstName": "Jane",
+                                "lastName": "Smith",
+                                "email": "jane.smith@example.com",
+                                "address": "456 Elm St",
+                                "alerting": false,
+                                "energyAlertingThreshold": -20.0
+                            }
+                        """))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.errors.energyAlertingThreshold").exists());
@@ -323,15 +319,15 @@ class UserControllerTest {
         mockMvc.perform(put("/api/v1/users/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "Jane",
-                                        "lastName": "Smith",
-                                        "email": "jane.smith@example.com",
-                                        "address": "456 Elm St",
-                                        "alerting": false,
-                                        "energyAlertingThreshold": 200.0
-                                    }
-                                """))
+                            {
+                                "firstName": "Jane",
+                                "lastName": "Smith",
+                                "email": "jane.smith@example.com",
+                                "address": "456 Elm St",
+                                "alerting": false,
+                                "energyAlertingThreshold": 200.0
+                            }
+                        """))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail").value("User with email already exists: jane.smith@example.com"));
@@ -350,15 +346,15 @@ class UserControllerTest {
         mockMvc.perform(put("/api/v1/users/99")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                    {
-                                        "firstName": "Jane",
-                                        "lastName": "Smith",
-                                        "email": "jane.smith@example.com",
-                                        "address": "456 Elm St",
-                                        "alerting": false,
-                                        "energyAlertingThreshold": 200.0
-                                    }
-                                """))
+                            {
+                                "firstName": "Jane",
+                                "lastName": "Smith",
+                                "email": "jane.smith@example.com",
+                                "address": "456 Elm St",
+                                "alerting": false,
+                                "energyAlertingThreshold": 200.0
+                            }
+                        """))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail").value("User not found"));
