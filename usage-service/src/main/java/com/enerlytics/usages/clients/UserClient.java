@@ -1,6 +1,6 @@
 package com.enerlytics.usages.clients;
 
-import com.enerlytics.usages.dtos.UserResponse;
+import com.enerlytics.usages.dtos.external.UserServiceResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +17,13 @@ public class UserClient {
     @Value("${user-service.base-url}")
     private String baseUrl;
 
-    public UserResponse getUserById(Long userId) {
+    public UserServiceResponse getUserById(Long userId) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
                 .path("/{userId}")
                 .buildAndExpand(userId)
                 .toUriString();
 
-        ResponseEntity<UserResponse> response = template.getForEntity(url, UserResponse.class);
+        ResponseEntity<UserServiceResponse> response = template.getForEntity(url, UserServiceResponse.class);
         return response.getBody();
     }
 }

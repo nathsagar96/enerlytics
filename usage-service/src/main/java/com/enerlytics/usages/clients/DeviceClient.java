@@ -1,6 +1,6 @@
 package com.enerlytics.usages.clients;
 
-import com.enerlytics.usages.dtos.DeviceResponse;
+import com.enerlytics.usages.dtos.external.DeviceServiceResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,24 +18,24 @@ public class DeviceClient {
     @Value("${device-service.base-url}")
     private String baseUrl;
 
-    public DeviceResponse getDeviceById(Long deviceId) {
+    public DeviceServiceResponse getDeviceById(Long deviceId) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
                 .path("/{deviceId}")
                 .buildAndExpand(deviceId)
                 .toUriString();
 
-        ResponseEntity<DeviceResponse> response = template.getForEntity(url, DeviceResponse.class);
+        ResponseEntity<DeviceServiceResponse> response = template.getForEntity(url, DeviceServiceResponse.class);
         return response.getBody();
     }
 
-    public List<DeviceResponse> getAllDevicesForUser(Long userId) {
+    public List<DeviceServiceResponse> getAllDevicesForUser(Long userId) {
         String url = UriComponentsBuilder.fromUriString(baseUrl)
                 .path("/user/{userId}")
                 .buildAndExpand(userId)
                 .toUriString();
 
-        ResponseEntity<DeviceResponse[]> response = template.getForEntity(url, DeviceResponse[].class);
-        DeviceResponse[] devices = response.getBody();
+        ResponseEntity<DeviceServiceResponse[]> response = template.getForEntity(url, DeviceServiceResponse[].class);
+        DeviceServiceResponse[] devices = response.getBody();
         return devices == null ? List.of() : List.of(devices);
     }
 }

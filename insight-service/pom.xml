@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
+        <version>3.5.14</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -16,14 +16,14 @@
 
     <properties>
         <java.version>25</java.version>
-        <spring-ai.version>2.0.0-M5</spring-ai.version>
+        <spring-ai.version>1.1.5</spring-ai.version>
         <spotless-maven-plugin.version>3.4.0</spotless-maven-plugin.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
@@ -38,7 +38,7 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

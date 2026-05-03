@@ -5,8 +5,9 @@ import com.enerlytics.events.EnergyUsageEvent;
 import com.enerlytics.usages.clients.DeviceClient;
 import com.enerlytics.usages.clients.UserClient;
 import com.enerlytics.usages.dtos.DeviceEnergy;
-import com.enerlytics.usages.dtos.DeviceResponse;
-import com.enerlytics.usages.dtos.UserResponse;
+import com.enerlytics.usages.dtos.external.DeviceServiceResponse;
+import com.enerlytics.usages.dtos.external.UserServiceResponse;
+import com.enerlytics.usages.dtos.responses.DeviceUsageResponse;
 import com.enerlytics.usages.dtos.responses.UsageResponse;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.QueryApi;
@@ -94,13 +95,13 @@ public class UsageService {
 
         for (DeviceEnergy deviceEnergy : deviceEnergies) {
             try {
-                final DeviceResponse deviceResponse = deviceClient.getDeviceById(deviceEnergy.getDeviceId());
+                final DeviceServiceResponse deviceDetails = deviceClient.getDeviceById(deviceEnergy.getDeviceId());
 
-                if (deviceResponse == null || deviceResponse.id() == null) {
-                    log.warn("DeviceResponse not found for ID: {}", deviceEnergy.getDeviceId());
+                if (deviceDetails == null || deviceDetails.id() == null) {
+                    log.warn("Device details not found for ID: {}", deviceEnergy.getDeviceId());
                     continue;
                 }
-                deviceEnergy.setUserId(deviceResponse.userId());
+                deviceEnergy.setUserId(deviceDetails.userId());
             } catch (Exception e) {
                 log.warn("Failed to fetch device for ID: {}", deviceEnergy.getDeviceId());
             }
@@ -113,7 +114,7 @@ public class UsageService {
         Map<Long, List<DeviceEnergy>> userDeviceEnergyMap =
                 deviceEnergies.stream().collect(Collectors.groupingBy(DeviceEnergy::getUserId));
 
-        log.info("User-DeviceResponse Energy Map: {}", userDeviceEnergyMap);
+        log.info("User-device energy map: {}", userDeviceEnergyMap);
 
         // get users energy consumption thresholds
         List<Long> userIds = new ArrayList<>(userDeviceEnergyMap.keySet());
@@ -122,13 +123,13 @@ public class UsageService {
 
         for (final Long userId : userIds) {
             try {
-                UserResponse user = userClient.getUserById(userId);
-                if (user == null || user.id() == null || !user.alerting()) {
+                final UserServiceResponse userDetails = userClient.getUserById(userId);
+                if (userDetails == null || userDetails.id() == null || !Boolean.TRUE.equals(userDetails.alerting())) {
                     log.warn("User not found or alerting disabled for ID: {}", userId);
                     continue;
                 }
-                userThresholdMap.put(userId, user.energyAlertingThreshold());
-                userEmailMap.put(userId, user.email());
+                userThresholdMap.put(userId, userDetails.energyAlertingThreshold());
+                userEmailMap.put(userId, userDetails.email());
             } catch (Exception e) {
                 log.warn("Failed to fetch user for ID: {}", userId);
             }
@@ -172,14 +173,14 @@ public class UsageService {
 
     public UsageResponse getXDaysUsageForUser(Long userId, int days) {
         log.info("Getting usage for userId {} over past {} days", userId, days);
-        List<DeviceResponse> devices = deviceClient.getAllDevicesForUser(userId);
+        final List<DeviceServiceResponse> deviceServiceResponses = deviceClient.getAllDevicesForUser(userId);
 
-        if (devices == null || devices.isEmpty()) {
-            return new UsageResponse(userId, devices);
+        if (deviceServiceResponses == null || deviceServiceResponses.isEmpty()) {
+            return new UsageResponse(userId, List.of());
         }
 
-        List<String> deviceIdStrings = devices.stream()
-                .map(DeviceResponse::id)
+        List<String> deviceIdStrings = deviceServiceResponses.stream()
+                .map(DeviceServiceResponse::id)
                 .filter(Objects::nonNull)
                 .map(String::valueOf)
                 .toList();
@@ -227,24 +228,26 @@ public class UsageService {
             }
         } catch (Exception e) {
             log.error("Failed to query InfluxDB for user {} usage over {} days: {}", userId, days, e.getMessage());
-            // set aggregatedConsumption to 0.0 on error
-            devices.forEach(d -> d.withEnergyConsumed(0.0));
-            return new UsageResponse(userId, null);
-        }
-
-        // populate aggregated energy consumed per device
-        for (DeviceResponse device : devices) {
-            if (device == null || device.id() == null) continue;
-            device.withEnergyConsumed(aggregatedMap.getOrDefault(device.id(), 0.0));
+            final List<DeviceUsageResponse> fallbackResponses = deviceServiceResponses.stream()
+                    .map(device -> new DeviceUsageResponse(
+                            device.id(), device.name(), device.deviceType(), device.location(), device.userId(), 0.0))
+                    .toList();
+            return new UsageResponse(userId, fallbackResponses);
         }
 
         log.info("Aggregated energy consumption for userId {}: {}", userId, aggregatedMap);
 
-        List<DeviceResponse> resultDevices = devices.stream()
-                .map(d -> new DeviceResponse(
-                        d.id(), d.name(), d.deviceType(), d.location(), d.userId(), d.energyConsumed()))
+        List<DeviceUsageResponse> usageDevices = deviceServiceResponses.stream()
+                .filter(Objects::nonNull)
+                .map(device -> new DeviceUsageResponse(
+                        device.id(),
+                        device.name(),
+                        device.deviceType(),
+                        device.location(),
+                        device.userId(),
+                        device.id() == null ? 0.0 : aggregatedMap.getOrDefault(device.id(), 0.0)))
                 .toList();
 
-        return new UsageResponse(userId, resultDevices);
+        return new UsageResponse(userId, usageDevices);
     }
 }

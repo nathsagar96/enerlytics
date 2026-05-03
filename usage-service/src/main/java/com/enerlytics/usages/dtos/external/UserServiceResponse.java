@@ -1,6 +1,6 @@
-package com.enerlytics.usages.dtos;
+package com.enerlytics.usages.dtos.external;
 
-public record UserResponse(
+public record UserServiceResponse(
         Long id,
         String firstName,
         String lastName,
