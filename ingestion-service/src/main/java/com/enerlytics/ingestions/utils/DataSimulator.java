@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +21,9 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class DataSimulator implements CommandLineRunner {
 
-    private final RestTemplate template = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate();
     private final Random random = new Random();
-    private final ExecutorService service = Executors.newCachedThreadPool();
+    private ExecutorService executorService;
 
     @Value("${simulation.parallel-threads}")
     private int parallelThreads;
@@ -37,18 +36,26 @@ public class DataSimulator implements CommandLineRunner {
 
     @Override
     public void run(String @NonNull ... args) {
-        log.info("Starting data simulation...");
-        ((ThreadPoolExecutor) service).setCorePoolSize(parallelThreads);
+        log.info(
+                "Starting data simulation with {} threads and {} requests per interval",
+                parallelThreads,
+                requestsPerInterval);
+        executorService = Executors.newFixedThreadPool(parallelThreads);
     }
 
     @Scheduled(fixedRateString = "${simulation.interval-ms}")
     public void sendMockData() {
+        if (executorService == null) {
+            return;
+        }
+
+        log.info("Simulating batch of {} requests...", requestsPerInterval);
         int batchSize = requestsPerInterval / parallelThreads;
         int remainder = requestsPerInterval % parallelThreads;
 
         for (int i = 0; i < parallelThreads; i++) {
             int requestsForThread = batchSize + (i < remainder ? 1 : 0);
-            service.submit(() -> {
+            executorService.submit(() -> {
                 for (int j = 0; j < requestsForThread; j++) {
                     IngestionRequest request = new IngestionRequest(
                             random.nextLong(1, 20),
@@ -58,10 +65,10 @@ public class DataSimulator implements CommandLineRunner {
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         HttpEntity<IngestionRequest> entity = new HttpEntity<>(request, headers);
-                        template.postForEntity(ingestionEndpoint, entity, Void.class);
-                        log.info("Sent request: {}", request);
+                        restTemplate.postForEntity(ingestionEndpoint, entity, Void.class);
+                        log.debug("Sent simulation request: {}", request);
                     } catch (Exception e) {
-                        log.error("Error sending request: {}", e.getMessage());
+                        log.error("Error sending simulation request: {}", e.getMessage());
                     }
                 }
             });
@@ -70,7 +77,9 @@ public class DataSimulator implements CommandLineRunner {
 
     @PreDestroy
     public void shutdown() {
-        service.shutdown();
-        log.info("Shutting down data simulator");
+        if (executorService != null) {
+            executorService.shutdown();
+            log.info("Shutting down data simulator executor");
+        }
     }
 }

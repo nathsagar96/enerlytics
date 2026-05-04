@@ -3,21 +3,21 @@ spring:
     name: ingestion-service
 
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
     template:
-      default-topic: energy-usage
+      default-topic: ${KAFKA_TOPIC:energy-usage}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 simulation:
-  ingestion-endpoint: http://localhost:8082/api/v1/ingestions
-  interval-ms: 60000
-  requests-per-interval: 10000
-  parallel-threads: 10
+  ingestion-endpoint: ${SIMULATION_INGESTION_ENDPOINT:http://localhost:8082/api/v1/ingestions}
+  interval-ms: ${SIMULATION_INTERVAL_MS:60000}
+  requests-per-interval: ${SIMULATION_REQUESTS_PER_INTERVAL:100}
+  parallel-threads: ${SIMULATION_PARALLEL_THREADS:2}
 
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}
 
 management:
   metrics:
