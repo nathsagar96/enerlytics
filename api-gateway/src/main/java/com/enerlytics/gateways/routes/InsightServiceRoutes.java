@@ -6,6 +6,7 @@ import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouter
 import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http;
 
 import java.net.URI;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions;
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions;
 import org.springframework.context.annotation.Bean;
@@ -18,20 +19,23 @@ import org.springframework.web.servlet.function.ServerResponse;
 @Configuration
 public class InsightServiceRoutes {
 
+    @Value("${services.insight.url}")
+    private String insightServiceUrl;
+
     @Bean
-    public RouterFunction<ServerResponse> insightRoute() {
-        return route("insight-service")
+    public RouterFunction<ServerResponse> insightServiceRoute() {
+        return route("insight-service-route")
                 .route(RequestPredicates.path("/api/v1/insights/**"), http())
-                .before(uri("http://localhost:8085"))
+                .before(uri(insightServiceUrl))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker(
-                        "insightServiceCircuitBreaker", URI.create("forward:/fallbackRoute")))
+                        "insightServiceCircuitBreaker", URI.create("forward:/fallback/insight-service")))
                 .build();
     }
 
     @Bean
-    public RouterFunction<ServerResponse> insightFallbackRoute() {
-        return route("fallbackRoute")
-                .route(RequestPredicates.path("/fallbackRoute"), _ -> ServerResponse.status(
+    public RouterFunction<ServerResponse> insightServiceFallbackRoute() {
+        return route("insight-service-fallback")
+                .route(RequestPredicates.path("/fallback/insight-service"), _ -> ServerResponse.status(
                                 HttpStatus.SERVICE_UNAVAILABLE)
                         .body("Insight Service is not available"))
                 .build();
@@ -41,7 +45,7 @@ public class InsightServiceRoutes {
     public RouterFunction<ServerResponse> insightServiceApiDocs() {
         return GatewayRouterFunctions.route("insight-service-api-docs")
                 .route(RequestPredicates.path("/docs/insight-service"), http())
-                .before(uri("http://localhost:8085/v3/api-docs"))
+                .before(uri(insightServiceUrl + "/v3/api-docs"))
                 .filter(setPath("/v3/api-docs"))
                 .build();
     }

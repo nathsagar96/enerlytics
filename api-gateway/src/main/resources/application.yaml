@@ -1,17 +1,34 @@
+server:
+  port: ${SERVER_PORT:9000}
+
 spring:
   application:
     name: api-gateway
+
+  threads:
+    virtual:
+      enabled: true
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8091/realms/enerlytics/protocol/openid-connect/certs
-          issuer-uri: http://localhost:8091/realms/enerlytics
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8091/realms/enerlytics/protocol/openid-connect/certs}
+          issuer-uri: ${ISSUER_URI:http://localhost:8091/realms/enerlytics}
 
 security:
   excluded:
-    urls: /actuator/**, /swagger-ui.html, /swagger-ui/**, /v3/api-docs/**, /swagger-resources/**, /docs/**
+    urls: ${SECURITY_EXCLUDED_URLS:/actuator/**,/swagger-ui.html,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**,/docs/**,/fallback/**}
+
+services:
+  user:
+    url: ${USER_SERVICE_URL:http://localhost:8080}
+  device:
+    url: ${DEVICE_SERVICE_URL:http://localhost:8081}
+  ingestion:
+    url: ${INGESTION_SERVICE_URL:http://localhost:8082}
+  insight:
+    url: ${INSIGHT_SERVICE_URL:http://localhost:8083}
 
 springdoc:
   swagger-ui:
@@ -26,32 +43,29 @@ springdoc:
         url: /docs/insight-service
 
 management:
-  metrics:
-    tags:
-      application: ${spring.application.name}
-  health:
-    circuitbreakers:
-      enabled: true
-  endpoint:
-    health:
-      show-details: always
   endpoints:
     web:
       exposure:
         include: health, info, metrics, circuitbreakers, prometheus
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 resilience4j:
   circuitbreaker:
     configs:
-        default:
-          registerHealthIndicator: true
-          slidingWindowType: COUNT_BASED
-          slidingWindowSize: 8
-          failureRateThreshold: 20
-          minimum-number-of-calls: 4
-          waitDurationInOpenState: 5s
-          permittedNumberOfCallsInHalfOpenState: 2
-          automaticTransitionFromOpenToHalfOpenEnabled: true
-
-server:
-  port: 9000
+      default:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        minimum-number-of-calls: 5
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true

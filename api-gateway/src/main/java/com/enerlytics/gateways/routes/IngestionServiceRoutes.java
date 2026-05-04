@@ -6,6 +6,7 @@ import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouter
 import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http;
 
 import java.net.URI;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions;
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions;
 import org.springframework.context.annotation.Bean;
@@ -18,20 +19,23 @@ import org.springframework.web.servlet.function.ServerResponse;
 @Configuration
 public class IngestionServiceRoutes {
 
+    @Value("${services.ingestion.url}")
+    private String ingestionServiceUrl;
+
     @Bean
-    public RouterFunction<ServerResponse> ingestionRoute() {
-        return route("ingestion-service")
+    public RouterFunction<ServerResponse> ingestionServiceRoute() {
+        return route("ingestion-service-route")
                 .route(RequestPredicates.path("/api/v1/ingestions/**"), http())
-                .before(uri("http://localhost:8082"))
+                .before(uri(ingestionServiceUrl))
                 .filter(CircuitBreakerFilterFunctions.circuitBreaker(
-                        "ingestionServiceCircuitBreaker", URI.create("forward:/fallbackRoute")))
+                        "ingestionServiceCircuitBreaker", URI.create("forward:/fallback/ingestion-service")))
                 .build();
     }
 
     @Bean
-    public RouterFunction<ServerResponse> ingestionFallbackRoute() {
-        return route("fallbackRoute")
-                .route(RequestPredicates.path("/fallbackRoute"), _ -> ServerResponse.status(
+    public RouterFunction<ServerResponse> ingestionServiceFallbackRoute() {
+        return route("ingestion-service-fallback")
+                .route(RequestPredicates.path("/fallback/ingestion-service"), _ -> ServerResponse.status(
                                 HttpStatus.SERVICE_UNAVAILABLE)
                         .body("Ingestion Service is not available"))
                 .build();
@@ -41,7 +45,7 @@ public class IngestionServiceRoutes {
     public RouterFunction<ServerResponse> ingestionServiceApiDocs() {
         return GatewayRouterFunctions.route("ingestion-service-api-docs")
                 .route(RequestPredicates.path("/docs/ingestion-service"), http())
-                .before(uri("http://localhost:8082/v3/api-docs"))
+                .before(uri(ingestionServiceUrl + "/v3/api-docs"))
                 .filter(setPath("/v3/api-docs"))
                 .build();
     }
