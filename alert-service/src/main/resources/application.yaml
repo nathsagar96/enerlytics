@@ -1,3 +1,6 @@
+server:
+  port: ${SERVER_PORT:8084}
+
 spring:
   application:
     name: alert-service
@@ -7,19 +10,25 @@ spring:
       enabled: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5434/alerts
-    username: postgres
-    password: password
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:alerts}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
 
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    baseline-on-migrate: true
 
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
     consumer:
-      group-id: alert-service
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:alert-service}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
@@ -27,25 +36,33 @@ spring:
           json:
             type:
               mapping: alertingEvent:com.enerlytics.events.AlertingEvent
+            trusted:
+              packages: com.enerlytics.events
 
   mail:
-    host: localhost
-    port: 1025
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
-          auth: false
+          auth: ${MAIL_SMTP_AUTH:false}
           starttls:
-            enable: false
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:false}
 
-server:
-  port: 8084
+  mvc:
+    problemdetails:
+      enabled: true
 
 management:
-  metrics:
-    tags:
-      application: ${spring.application.name}
   endpoints:
     web:
       exposure:
         include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
