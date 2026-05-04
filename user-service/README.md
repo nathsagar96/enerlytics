@@ -55,6 +55,18 @@ The service will be available at `http://localhost:8080` (or the port specified 
 ./mvnw clean test
 ```
 
+### Integration Tests with Testcontainers
+
+Integration tests use **Testcontainers** to spin up a real PostgreSQL database in a Docker container.
+The database is automatically managed and cleaned up between test runs.
+
+- **Container Image**: `postgres:18-alpine`
+- **Database**: Isolated per test class (e.g., `users`)
+- **Lifecycle**: Container starts before all tests and stops after completion
+- **Autoconfiguration**: Spring Boot's `@ServiceConnection` automatically configures the datasource
+
+No manual database setup is required for running tests — Testcontainers handles everything.
+
 ## 📖 API Documentation
 
 Once the service is running, you can access the interactive API documentation at:
