@@ -1,6 +1,7 @@
 # Alert Service
 
-The **Alert Service** is a critical component of the Enerlytics platform, responsible for processing energy usage alerts and notifying users via email. It listens to alert events from Kafka and persists notification history in PostgreSQL.
+The **Alert Service** is a critical component of the Enerlytics platform, responsible for processing energy usage alerts
+and notifying users via email. It listens to alert events from Kafka and persists notification history in PostgreSQL.
 
 ## 🚀 Core Features
 
@@ -31,20 +32,20 @@ The **Alert Service** is a critical component of the Enerlytics platform, respon
 
 ### Running the Service
 
-1.  **Start Infrastructure**: From the project root, start the necessary containers.
-    ```bash
-    docker compose -f compose.yaml up -d alerts-db kafka mailpit
-    ```
+1. **Start Infrastructure**: From the project root, start the necessary containers.
+   ```bash
+   docker compose -f compose.yaml up -d postgres kafka mailpit
+   ```
 
-2.  **Environment Setup**: Copy `.env.example` to `.env` and adjust if necessary.
-    ```bash
-    cp .env.example .env
-    ```
+2. **Environment Setup**: Copy `.env.example` to `.env` and adjust if necessary.
+   ```bash
+   cp .env.example .env
+   ```
 
-3.  **Run Application**:
-    ```bash
-    ./mvnw spring-boot:run
-    ```
+3. **Run Application**:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
 
 The service will be available at `http://localhost:8084` (or the port specified in `SERVER_PORT`).
 
@@ -58,24 +59,26 @@ The service will be available at `http://localhost:8084` (or the port specified 
 
 Key environment variables:
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `SERVER_PORT` | Port the service runs on | `8084` |
-| `DB_HOST` | PostgreSQL host | `localhost` |
-| `DB_PORT` | PostgreSQL port | `5432` |
-| `DB_NAME` | Database name | `alerts` |
-| `KAFKA_BOOTSTRAP_SERVERS` | Kafka broker address | `localhost:9094` |
-| `MAIL_HOST` | SMTP server host | `localhost` |
-| `MAIL_PORT` | SMTP server port | `1025` |
+| Variable                  | Description              | Default          |
+|:--------------------------|:-------------------------|:-----------------|
+| `SERVER_PORT`             | Port the service runs on | `8084`           |
+| `DB_HOST`                 | PostgreSQL host          | `localhost`      |
+| `DB_PORT`                 | PostgreSQL port          | `5432`           |
+| `DB_NAME`                 | Database name            | `alerts`         |
+| `KAFKA_BOOTSTRAP_SERVERS` | Kafka broker address     | `localhost:9094` |
+| `MAIL_HOST`               | SMTP server host         | `localhost`      |
+| `MAIL_PORT`               | SMTP server port         | `1025`           |
 
 ## 🛠 Development
 
 ### Formatting
+
 This project uses **Spotless** to enforce consistent coding style.
 
 - **Check formatting**: `./mvnw spotless:check`
 - **Apply formatting**: `./mvnw spotless:apply`
 
 ### Database Migrations
+
 Migrations are handled by Flyway. SQL scripts are located in:
 `src/main/resources/db/migration`

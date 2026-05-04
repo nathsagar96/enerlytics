@@ -1,0 +1,8 @@
+CREATE DATABASE users;
+CREATE DATABASE devices;
+CREATE DATABASE alerts;
+CREATE DATABASE keycloak;
+
+CREATE USER keycloak WITH PASSWORD 'password';
+GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
+ALTER DATABASE keycloak OWNER TO keycloak;

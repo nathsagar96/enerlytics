@@ -1,6 +1,8 @@
 # Device Service
 
-The **Device Service** is a core microservice in the Enerlytics ecosystem, responsible for managing smart devices, their metadata, and their association with users. It provides a robust RESTful API to handle device lifecycle operations and serves as a foundational component for energy usage tracking and alerting.
+The **Device Service** is a core microservice in the Enerlytics ecosystem, responsible for managing smart devices, their
+metadata, and their association with users. It provides a robust RESTful API to handle device lifecycle operations and
+serves as a foundational component for energy usage tracking and alerting.
 
 ## 🚀 Core Features
 
@@ -31,20 +33,20 @@ The **Device Service** is a core microservice in the Enerlytics ecosystem, respo
 
 ### Running the Service
 
-1.  **Start Infrastructure**: From the project root, start the database.
-    ```bash
-    docker compose -f compose.yaml up -d devices-db
-    ```
+1. **Start Infrastructure**: From the project root, start the database.
+   ```bash
+   docker compose -f compose.yaml up -d postgres
+   ```
 
-2.  **Environment Setup**: Copy `.env.example` to `.env` and adjust if necessary.
-    ```bash
-    cp .env.example .env
-    ```
+2. **Environment Setup**: Copy `.env.example` to `.env` and adjust if necessary.
+   ```bash
+   cp .env.example .env
+   ```
 
-3.  **Run Application**:
-    ```bash
-    ./mvnw spring-boot:run
-    ```
+3. **Run Application**:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
 
 The service will be available at `http://localhost:8081` (or the port specified in `SERVER_PORT`).
 
@@ -65,25 +67,27 @@ Once the service is running, you can access the interactive API documentation at
 
 Key environment variables:
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `SERVER_PORT` | Port the service runs on | `8081` |
-| `DB_HOST` | PostgreSQL host | `localhost` |
-| `DB_PORT` | PostgreSQL port | `5433` |
-| `DB_NAME` | Database name | `devices` |
-| `DB_USERNAME` | Database username | `postgres` |
-| `DB_PASSWORD` | Database password | `password` |
-| `INIT_DATA` | Whether to initialize sample data | `false` |
+| Variable      | Description                       | Default     |
+|:--------------|:----------------------------------|:------------|
+| `SERVER_PORT` | Port the service runs on          | `8081`      |
+| `DB_HOST`     | PostgreSQL host                   | `localhost` |
+| `DB_PORT`     | PostgreSQL port                   | `5432`      |
+| `DB_NAME`     | Database name                     | `devices`   |
+| `DB_USERNAME` | Database username                 | `postgres`  |
+| `DB_PASSWORD` | Database password                 | `password`  |
+| `INIT_DATA`   | Whether to initialize sample data | `false`     |
 
 ## 🛠 Development
 
 ### Formatting
+
 This project uses **Spotless** to enforce consistent coding style.
 
 - **Check formatting**: `./mvnw spotless:check`
 - **Apply formatting**: `./mvnw spotless:apply`
 
 ### Database Migrations
+
 Migrations are handled by Flyway. SQL scripts are located in:
 `src/main/resources/db/migration`
 
