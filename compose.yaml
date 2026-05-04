@@ -17,7 +17,7 @@ services:
       retries: 5
 
   kafka:
-    image: apache/kafka:3.7.0
+    image: apache/kafka:4.2.0
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_CLUSTER_ID: 'enerlytics-cluster-1'
@@ -47,7 +47,7 @@ services:
       - kafka_data:/var/lib/kafka/data
 
   kafka-ui:
-    image: ghcr.io/kafbat/kafka-ui:latest
+    image: ghcr.io/kafbat/kafka-ui:main
     profiles: ["tools"]
     ports:
       - "8070:8080"
