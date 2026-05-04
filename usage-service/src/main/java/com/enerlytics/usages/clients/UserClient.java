@@ -12,7 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class UserClient {
 
-    private final RestTemplate template;
+    private final RestTemplate restTemplate;
 
     @Value("${user-service.base-url}")
     private String baseUrl;
@@ -23,7 +23,7 @@ public class UserClient {
                 .buildAndExpand(userId)
                 .toUriString();
 
-        ResponseEntity<UserServiceResponse> response = template.getForEntity(url, UserServiceResponse.class);
+        ResponseEntity<UserServiceResponse> response = restTemplate.getForEntity(url, UserServiceResponse.class);
         return response.getBody();
     }
 }

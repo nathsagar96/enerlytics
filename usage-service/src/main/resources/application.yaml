@@ -1,9 +1,12 @@
+server:
+  port: ${SERVER_PORT:8083}
+
 spring:
   application:
     name: usage-service
 
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
     template:
       default-topic: energy-alerts
     producer:
@@ -20,25 +23,25 @@ spring:
               mapping: energyUsageEvent:com.enerlytics.events.EnergyUsageEvent
 
 influx:
-  url: http://localhost:8072
-  token: my-token
-  org: enerlytics
-  bucket: usages
+  url: ${INFLUX_URL:http://localhost:8072}
+  token: ${INFLUX_TOKEN:my-token}
+  org: ${INFLUX_ORG:enerlytics}
+  bucket: ${INFLUX_BUCKET:usages}
 
 user-service:
-  base-url: http://localhost:8080/api/v1/users
+  base-url: ${USER_SERVICE_URL:http://localhost:8080/api/v1/users}
 
 device-service:
-  base-url: http://localhost:8081/api/v1/devices
-
-server:
-  port: 8083
+  base-url: ${DEVICE_SERVICE_URL:http://localhost:8081/api/v1/devices}
 
 management:
-  metrics:
-    tags:
-      application: ${spring.application.name}
   endpoints:
     web:
       exposure:
         include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}

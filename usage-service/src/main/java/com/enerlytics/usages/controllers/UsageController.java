@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/usages")
 public class UsageController {
 
-    private final UsageService service;
+    private final UsageService usageService;
 
     @GetMapping("/{userId}")
     public ResponseEntity<UsageResponse> getUserDeviceUsage(
             @PathVariable Long userId, @RequestParam(defaultValue = "3") int days) {
-        return ResponseEntity.status(HttpStatus.OK).body(service.getXDaysUsageForUser(userId, days));
+        return ResponseEntity.status(HttpStatus.OK).body(usageService.getUsageForUserOverDays(userId, days));
     }
 }

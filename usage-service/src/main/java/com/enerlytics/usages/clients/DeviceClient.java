@@ -13,7 +13,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class DeviceClient {
 
-    private final RestTemplate template;
+    private final RestTemplate restTemplate;
 
     @Value("${device-service.base-url}")
     private String baseUrl;
@@ -24,7 +24,7 @@ public class DeviceClient {
                 .buildAndExpand(deviceId)
                 .toUriString();
 
-        ResponseEntity<DeviceServiceResponse> response = template.getForEntity(url, DeviceServiceResponse.class);
+        ResponseEntity<DeviceServiceResponse> response = restTemplate.getForEntity(url, DeviceServiceResponse.class);
         return response.getBody();
     }
 
@@ -34,7 +34,8 @@ public class DeviceClient {
                 .buildAndExpand(userId)
                 .toUriString();
 
-        ResponseEntity<DeviceServiceResponse[]> response = template.getForEntity(url, DeviceServiceResponse[].class);
+        ResponseEntity<DeviceServiceResponse[]> response =
+                restTemplate.getForEntity(url, DeviceServiceResponse[].class);
         DeviceServiceResponse[] devices = response.getBody();
         return devices == null ? List.of() : List.of(devices);
     }
