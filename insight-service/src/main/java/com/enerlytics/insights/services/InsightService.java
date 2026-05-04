@@ -20,45 +20,53 @@ public class InsightService {
     private final OllamaChatModel chatModel;
 
     public InsightResponse getSavingTips(Long userId) {
-        UsageResponse response = usageClient.getXDaysUsageForUser(userId, 3);
+        log.debug("Fetching usage data for saving tips for userId: {}", userId);
+        UsageResponse usageData = usageClient.getXDaysUsageForUser(userId, 3);
 
-        double totalUsage = response.devices().stream()
+        double totalEnergyConsumed = usageData.devices().stream()
                 .mapToDouble(DeviceResponse::energyConsumed)
                 .sum();
 
-        log.info("Calling ollama for userId {} with total usage {}", userId, totalUsage);
+        log.info(
+                "Generating saving tips via AI for userId: {} (Total energy consumed: {} kWh)",
+                userId,
+                totalEnergyConsumed);
 
-        String prompt = "This is my total consumption over past 3 days."
-                + "How can I reduce my energy consumption? How does it compare to average households?"
+        String savingTipsPrompt = "This is my total consumption over past 3 days. "
+                + "How can I reduce my energy consumption? How does it compare to average households? "
                 + "Total energy used: \n"
-                + response.devices();
+                + usageData.devices();
 
-        ChatResponse chatResponse =
-                chatModel.call(Prompt.builder().content(prompt).build());
+        ChatResponse aiResponse =
+                chatModel.call(Prompt.builder().content(savingTipsPrompt).build());
 
-        return new InsightResponse(userId, chatResponse.getResult().getOutput().getText(), totalUsage);
+        log.debug("AI generated saving tips successfully for userId: {}", userId);
+        return new InsightResponse(userId, aiResponse.getResult().getOutput().getText(), totalEnergyConsumed);
     }
 
     public InsightResponse getOverview(Long userId) {
-        UsageResponse response = usageClient.getXDaysUsageForUser(userId, 3);
+        log.debug("Fetching usage data for overview for userId: {}", userId);
+        UsageResponse usageData = usageClient.getXDaysUsageForUser(userId, 3);
 
-        log.info("response: {}", response);
-
-        double totalUsage = response.devices().stream()
+        double totalEnergyConsumed = usageData.devices().stream()
                 .mapToDouble(DeviceResponse::energyConsumed)
                 .sum();
 
-        log.info("Calling ollama for userId {} with total usage {}", userId, totalUsage);
+        log.info(
+                "Generating usage overview via AI for userId: {} (Total energy consumed: {} kWh)",
+                userId,
+                totalEnergyConsumed);
 
-        String prompt =
-                "Analyze the following energy usage data and provide a concise overview with actionable insights."
-                        + "This data is the aggregate data for the past 3 days."
+        String overviewPrompt =
+                "Analyze the following energy usage data and provide a concise overview with actionable insights. "
+                        + "This data is the aggregate data for the past 3 days. "
                         + "Usage Data: \n"
-                        + response.devices();
+                        + usageData.devices();
 
-        ChatResponse chatResponse =
-                chatModel.call(Prompt.builder().content(prompt).build());
+        ChatResponse aiResponse =
+                chatModel.call(Prompt.builder().content(overviewPrompt).build());
 
-        return new InsightResponse(userId, chatResponse.getResult().getOutput().getText(), totalUsage);
+        log.debug("AI generated usage overview successfully for userId: {}", userId);
+        return new InsightResponse(userId, aiResponse.getResult().getOutput().getText(), totalEnergyConsumed);
     }
 }

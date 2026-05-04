@@ -36,6 +36,10 @@ public class InsightController {
         @ApiResponse(
                 responseCode = "500",
                 description = "Insight generation failed",
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "User not found",
                 content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public ResponseEntity<InsightResponse> getSavingTips(
@@ -53,6 +57,10 @@ public class InsightController {
         @ApiResponse(
                 responseCode = "500",
                 description = "Insight generation failed",
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "User not found",
                 content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public ResponseEntity<InsightResponse> getOverview(
