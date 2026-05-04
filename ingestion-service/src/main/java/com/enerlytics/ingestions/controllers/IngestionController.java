@@ -37,6 +37,6 @@ public class IngestionController {
                 content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     public void ingestData(@RequestBody @Valid IngestionRequest request) {
-        service.ingestDate(request);
+        service.ingestData(request);
     }
 }

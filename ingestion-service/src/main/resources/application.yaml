@@ -27,3 +27,8 @@ management:
     web:
       exposure:
         include: health, info, metrics, prometheus
+
+app:
+  openapi:
+    server-url: ${OPENAPI_SERVER_URL:http://localhost:8082}
+    server-description: ${OPENAPI_SERVER_DESCRIPTION:Local environment}

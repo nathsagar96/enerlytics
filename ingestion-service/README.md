@@ -17,6 +17,7 @@ testing purposes.
 - **Framework**: Spring Boot 4.0
 - **Messaging**: Apache Kafka
 - **Build Tool**: Maven
+- **Documentation**: Springdoc OpenAPI
 - **Formatting**: Spotless (Palantir Java Format)
 
 ## 🏁 Getting Started
@@ -52,19 +53,28 @@ The service will be available at `http://localhost:8082` (or the port specified 
 ./mvnw clean test
 ```
 
+## 📖 API Documentation
+
+Once the service is running, you can access the interactive API documentation at:
+
+- **Swagger UI**: `http://localhost:8082/swagger-ui.html`
+- **OpenAPI Spec**: `http://localhost:8082/v3/api-docs`
+
 ## ⚙️ Configuration
 
 Key environment variables:
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `SERVER_PORT` | Port the service runs on | `8082` |
-| `KAFKA_BOOTSTRAP_SERVERS` | Kafka bootstrap servers | `localhost:9094` |
-| `KAFKA_TOPIC` | Kafka topic for usage events | `energy-usage` |
-| `SIMULATION_INGESTION_ENDPOINT` | Endpoint for the simulator to hit | `http://localhost:8082/api/v1/ingestions` |
-| `SIMULATION_INTERVAL_MS` | Interval between simulation batches | `60000` |
-| `SIMULATION_REQUESTS_PER_INTERVAL` | Total requests per interval | `100` |
-| `SIMULATION_PARALLEL_THREADS` | Threads for parallel simulation | `2` |
+| Variable                           | Description                            | Default                                   |
+|:-----------------------------------|:---------------------------------------|:------------------------------------------|
+| `SERVER_PORT`                      | Port the service runs on               | `8082`                                    |
+| `KAFKA_BOOTSTRAP_SERVERS`          | Kafka bootstrap servers                | `localhost:9094`                          |
+| `KAFKA_TOPIC`                      | Kafka topic for usage events           | `energy-usage`                            |
+| `SIMULATION_INGESTION_ENDPOINT`    | Endpoint for the simulator to hit      | `http://localhost:8082/api/v1/ingestions` |
+| `SIMULATION_INTERVAL_MS`           | Interval between simulation batches    | `60000`                                   |
+| `SIMULATION_REQUESTS_PER_INTERVAL` | Total requests per interval            | `100`                                     |
+| `SIMULATION_PARALLEL_THREADS`      | Threads for parallel simulation        | `2`                                       |
+| `OPENAPI_SERVER_URL`               | Base URL for OpenAPI documentation     | `http://localhost:8082`                   |
+| `OPENAPI_SERVER_DESCRIPTION`       | Description for the server environment | `Local environment`                       |
 
 ## 🛠 Development
 
