@@ -1,5 +1,6 @@
 package com.enerlytics.devices.exceptions;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -23,16 +25,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ProblemDetail handleNotFound(ResourceNotFoundException ex) {
-        return buildProblemDetail(HttpStatus.NOT_FOUND, ex.getMessage(), "/errors/not-found");
-    }
+    private static final String ERRORS_BASE = "/errors/";
+    private static final String VALIDATION_TYPE = ERRORS_BASE + "validation";
 
-    @ExceptionHandler(Exception.class)
-    public ProblemDetail handleUnexpected(Exception ex) {
-        log.error("Unhandled exception", ex);
-        return buildProblemDetail(
-                HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", "/errors/internal-server-error");
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ProblemDetail> handleApplication(ApplicationException ex, HttpServletRequest request) {
+        HttpStatus status = ex.getHttpStatus();
+        log.warn("Application exception [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
+        ProblemDetail problem =
+                buildProblemDetail(status, ex.getClass().getSimpleName(), ex.getMessage(), typeUriFor(status), request);
+        return ResponseEntity.status(status).body(problem);
     }
 
     @Override
@@ -46,17 +48,39 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         FieldError::getField,
                         error -> String.valueOf(error.getDefaultMessage()),
                         (first, ignored) -> first));
-        ProblemDetail problemDetail =
-                buildProblemDetail(HttpStatus.BAD_REQUEST, "Validation failed for request body", "/errors/validation");
+        ProblemDetail problemDetail = buildProblemDetail(
+                HttpStatus.BAD_REQUEST,
+                "Validation Failed",
+                "Validation failed for request body",
+                VALIDATION_TYPE,
+                extractRequestUri(request));
         problemDetail.setProperty("errors", fieldErrors);
         return handleExceptionInternal(ex, problemDetail, headers, status, request);
     }
 
-    private ProblemDetail buildProblemDetail(HttpStatus status, String detail, String typePath) {
+    private ProblemDetail buildProblemDetail(
+            HttpStatus status, String title, String detail, String typeUri, HttpServletRequest request) {
+        return buildProblemDetail(status, title, detail, typeUri, request.getRequestURI());
+    }
+
+    private ProblemDetail buildProblemDetail(
+            HttpStatus status, String title, String detail, String typeUri, String instance) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, detail);
-        problemDetail.setType(URI.create(typePath));
-        problemDetail.setTitle(status.getReasonPhrase());
+        problemDetail.setType(URI.create(typeUri));
+        problemDetail.setTitle(title);
+        problemDetail.setInstance(URI.create(instance));
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
+    }
+
+    private String typeUriFor(HttpStatus status) {
+        return ERRORS_BASE + status.getReasonPhrase().toLowerCase().replace(' ', '-');
+    }
+
+    private String extractRequestUri(WebRequest request) {
+        if (request instanceof ServletWebRequest servletRequest) {
+            return servletRequest.getRequest().getRequestURI();
+        }
+        return "unknown";
     }
 }

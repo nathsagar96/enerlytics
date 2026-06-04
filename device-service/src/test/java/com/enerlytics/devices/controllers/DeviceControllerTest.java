@@ -22,13 +22,15 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@AutoConfigureMockMvc
 @WebMvcTest(controllers = DeviceController.class)
 class DeviceControllerTest {
 
@@ -41,11 +43,10 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should create a device successfully and return 201 Created")
     void createDevice_Success() throws Exception {
-        // Arrange
-        DeviceResponse response = new DeviceResponse(1L, "Living Room Camera", DeviceType.CAMERA, "Living Room", 1L);
+        DeviceResponse response =
+                new DeviceResponse(1L, "Living Room Camera", DeviceType.CAMERA, "Living Room", 1L, null, null);
         when(deviceService.createDevice(any(CreateDeviceRequest.class))).thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/devices")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -68,7 +69,6 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should return 400 Bad Request when required fields are missing")
     void createDevice_BadRequest_MissingFields() throws Exception {
-        // Act & Assert
         mockMvc.perform(post("/api/v1/devices")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -85,11 +85,9 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should retrieve a device successfully and return 200 OK")
     void getDeviceById_Success() throws Exception {
-        // Arrange
-        DeviceResponse response = new DeviceResponse(1L, "Doorbell", DeviceType.DOORBELL, "Front Door", 2L);
+        DeviceResponse response = new DeviceResponse(1L, "Doorbell", DeviceType.DOORBELL, "Front Door", 2L, null, null);
         when(deviceService.getDeviceById(1L)).thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/devices/1").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -103,60 +101,55 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should return 404 Not Found when the device does not exist")
     void getDeviceById_NotFound() throws Exception {
-        // Arrange
-        when(deviceService.getDeviceById(99L)).thenThrow(new ResourceNotFoundException("Device not found"));
+        when(deviceService.getDeviceById(99L)).thenThrow(new ResourceNotFoundException("Device", 99L));
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/devices/99").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.detail").value("Device not found"));
+                .andExpect(jsonPath("$.detail").value("Device not found with id: 99"));
     }
 
     @Test
-    @DisplayName("Should retrieve all devices successfully and return 200 OK")
+    @DisplayName("Should retrieve a paginated list of devices and return 200 OK")
     void getAllDevices_Success() throws Exception {
-        // Arrange
+        Pageable pageable = PageRequest.of(0, 20);
         List<DeviceResponse> devices = List.of(
-                new DeviceResponse(1L, "Speaker", DeviceType.SPEAKER, "Bedroom", 1L),
-                new DeviceResponse(2L, "Thermostat", DeviceType.THERMOSTAT, "Hallway", 1L));
-        when(deviceService.getAllDevices()).thenReturn(devices);
+                new DeviceResponse(1L, "Speaker", DeviceType.SPEAKER, "Bedroom", 1L, null, null),
+                new DeviceResponse(2L, "Thermostat", DeviceType.THERMOSTAT, "Hallway", 1L, null, null));
+        Page<DeviceResponse> page = new PageImpl<>(devices, pageable, devices.size());
+        when(deviceService.getAllDevices(any(Pageable.class))).thenReturn(page);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/devices").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].name").value("Speaker"))
-                .andExpect(jsonPath("$[0].deviceType").value("SPEAKER"))
-                .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[1].name").value("Thermostat"))
-                .andExpect(jsonPath("$[1].deviceType").value("THERMOSTAT"));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.content[0].name").value("Speaker"))
+                .andExpect(jsonPath("$.content[0].deviceType").value("SPEAKER"))
+                .andExpect(jsonPath("$.content[1].id").value(2))
+                .andExpect(jsonPath("$.content[1].name").value("Thermostat"))
+                .andExpect(jsonPath("$.content[1].deviceType").value("THERMOSTAT"));
     }
 
     @Test
-    @DisplayName("Should return an empty list when no devices exist and return 200 OK")
+    @DisplayName("Should return an empty page when no devices exist and return 200 OK")
     void getAllDevices_EmptyList() throws Exception {
-        // Arrange
-        when(deviceService.getAllDevices()).thenReturn(List.of());
+        Pageable pageable = PageRequest.of(0, 20);
+        when(deviceService.getAllDevices(any(Pageable.class))).thenReturn(Page.empty(pageable));
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/devices").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.content.length()").value(0));
     }
 
     @Test
     @DisplayName("Should update a device successfully and return 200 OK")
     void updateDevice_Success() throws Exception {
-        // Arrange
         UpdateDeviceRequest request = new UpdateDeviceRequest("Outdoor Camera", null, "Garage", 3L);
-        DeviceResponse response = new DeviceResponse(1L, "Outdoor Camera", DeviceType.CAMERA, "Garage", 3L);
+        DeviceResponse response = new DeviceResponse(1L, "Outdoor Camera", DeviceType.CAMERA, "Garage", 3L, null, null);
         when(deviceService.updateDevice(1L, request)).thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(put("/api/v1/devices/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -178,7 +171,6 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should return 400 Bad Request when deviceType is provided for update")
     void updateDevice_BadRequest_DeviceTypeProvided() throws Exception {
-        // Act & Assert
         mockMvc.perform(put("/api/v1/devices/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -197,11 +189,9 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should return 404 Not Found when updating a device that does not exist")
     void updateDevice_NotFound() throws Exception {
-        // Arrange
         UpdateDeviceRequest request = new UpdateDeviceRequest("Outdoor Camera", null, "Garage", 3L);
-        when(deviceService.updateDevice(99L, request)).thenThrow(new ResourceNotFoundException("Device not found"));
+        when(deviceService.updateDevice(99L, request)).thenThrow(new ResourceNotFoundException("Device", 99L));
 
-        // Act & Assert
         mockMvc.perform(put("/api/v1/devices/99")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -213,16 +203,14 @@ class DeviceControllerTest {
                                 """))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.detail").value("Device not found"));
+                .andExpect(jsonPath("$.detail").value("Device not found with id: 99"));
     }
 
     @Test
     @DisplayName("Should delete a device successfully and return 204 No Content")
     void deleteDevice_Success() throws Exception {
-        // Arrange
         doNothing().when(deviceService).deleteDevice(1L);
 
-        // Act & Assert
         mockMvc.perform(delete("/api/v1/devices/1").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
@@ -230,50 +218,49 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should return 404 Not Found when deleting a device that does not exist")
     void deleteDevice_NotFound() throws Exception {
-        // Arrange
-        doThrow(new ResourceNotFoundException("Device not found"))
+        doThrow(new ResourceNotFoundException("Device", 99L))
                 .when(deviceService)
                 .deleteDevice(99L);
 
-        // Act & Assert
         mockMvc.perform(delete("/api/v1/devices/99").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.detail").value("Device not found"));
+                .andExpect(jsonPath("$.detail").value("Device not found with id: 99"));
     }
 
     @Test
-    @DisplayName("Should retrieve all devices by user id successfully and return 200 OK")
+    @DisplayName("Should retrieve a paginated list of devices for a user and return 200 OK")
     void getAllDevicesByUserId_Success() throws Exception {
-        // Arrange
         Long userId = 1L;
+        Pageable pageable = PageRequest.of(0, 20);
         List<DeviceResponse> devices = List.of(
-                new DeviceResponse(1L, "Speaker", DeviceType.SPEAKER, "Bedroom", userId),
-                new DeviceResponse(2L, "Thermostat", DeviceType.THERMOSTAT, "Hallway", userId));
-        when(deviceService.getAllDevicesByUserId(userId)).thenReturn(devices);
+                new DeviceResponse(1L, "Speaker", DeviceType.SPEAKER, "Bedroom", userId, null, null),
+                new DeviceResponse(2L, "Thermostat", DeviceType.THERMOSTAT, "Hallway", userId, null, null));
+        Page<DeviceResponse> page = new PageImpl<>(devices, pageable, devices.size());
+        when(deviceService.getAllDevicesByUserId(any(Long.class), any(Pageable.class)))
+                .thenReturn(page);
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/devices/user/" + userId).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].userId").value(userId))
-                .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[1].userId").value(userId));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.content[0].userId").value(userId))
+                .andExpect(jsonPath("$.content[1].id").value(2))
+                .andExpect(jsonPath("$.content[1].userId").value(userId));
     }
 
     @Test
-    @DisplayName("Should return an empty list when no devices exist for a user and return 200 OK")
+    @DisplayName("Should return an empty page when no devices exist for a user and return 200 OK")
     void getAllDevicesByUserId_EmptyList() throws Exception {
-        // Arrange
         Long userId = 99L;
-        when(deviceService.getAllDevicesByUserId(userId)).thenReturn(List.of());
+        Pageable pageable = PageRequest.of(0, 20);
+        when(deviceService.getAllDevicesByUserId(any(Long.class), any(Pageable.class)))
+                .thenReturn(Page.empty(pageable));
 
-        // Act & Assert
         mockMvc.perform(get("/api/v1/devices/user/" + userId).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.content.length()").value(0));
     }
 }

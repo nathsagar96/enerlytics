@@ -32,6 +32,12 @@ public class DeviceMapper {
 
     public DeviceResponse toResponse(Device device) {
         return new DeviceResponse(
-                device.getId(), device.getName(), device.getDeviceType(), device.getLocation(), device.getUserId());
+                device.getId(),
+                device.getName(),
+                device.getDeviceType(),
+                device.getLocation(),
+                device.getUserId(),
+                device.getCreatedAt(),
+                device.getUpdatedAt());
     }
 }

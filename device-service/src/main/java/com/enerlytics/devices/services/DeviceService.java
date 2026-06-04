@@ -7,9 +7,10 @@ import com.enerlytics.devices.entities.Device;
 import com.enerlytics.devices.exceptions.ResourceNotFoundException;
 import com.enerlytics.devices.mappers.DeviceMapper;
 import com.enerlytics.devices.repositories.DeviceRepository;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class DeviceService {
+
     private final DeviceRepository deviceRepository;
     private final DeviceMapper deviceMapper;
 
@@ -36,9 +38,9 @@ public class DeviceService {
     }
 
     @Transactional(readOnly = true)
-    public List<DeviceResponse> getAllDevices() {
-        log.info("Fetching all devices");
-        return deviceRepository.findAll().stream().map(deviceMapper::toResponse).toList();
+    public Page<DeviceResponse> getAllDevices(Pageable pageable) {
+        log.info("Fetching devices page: {}", pageable);
+        return deviceRepository.findAll(pageable).map(deviceMapper::toResponse);
     }
 
     @Transactional
@@ -59,17 +61,18 @@ public class DeviceService {
         log.debug("Device with id: {} deleted successfully", id);
     }
 
+    @Transactional(readOnly = true)
+    public Page<DeviceResponse> getAllDevicesByUserId(Long userId, Pageable pageable) {
+        log.info("Fetching devices for user id: {} page: {}", userId, pageable);
+        Page<Device> devicePage = deviceRepository.findAllByUserId(userId, pageable);
+        log.debug("Found {} devices for user id: {}", devicePage.getNumberOfElements(), userId);
+        return devicePage.map(deviceMapper::toResponse);
+    }
+
     private Device findById(Long id) {
         return deviceRepository.findById(id).orElseThrow(() -> {
             log.error("Device not found with id: {}", id);
-            return new ResourceNotFoundException("Device not found with id: " + id);
+            return new ResourceNotFoundException("Device", id);
         });
-    }
-
-    public List<DeviceResponse> getAllDevicesByUserId(Long userId) {
-        log.info("Fetching all devices for user id: {}", userId);
-        List<Device> deviceEntities = deviceRepository.findAllByUserId(userId);
-        log.debug("Found {} devices for user id: {}", deviceEntities.size(), userId);
-        return deviceEntities.stream().map(deviceMapper::toResponse).toList();
     }
 }

@@ -64,7 +64,7 @@ public class DataInitializer implements CommandLineRunner {
                 .name(name)
                 .deviceType(type)
                 .location(location)
-                .userId(random.nextInt(10) + 1L)
+                .userId((long) (random.nextInt(10) + 1))
                 .build();
     }
 }

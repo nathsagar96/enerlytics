@@ -6,15 +6,17 @@ import com.enerlytics.devices.dtos.responses.DeviceResponse;
 import com.enerlytics.devices.services.DeviceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -69,15 +71,11 @@ public class DeviceController {
     }
 
     @GetMapping
-    @Operation(summary = "List devices", description = "Returns a list of all registered devices.")
-    @ApiResponses({
-        @ApiResponse(
-                responseCode = "200",
-                description = "Devices fetched",
-                content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceResponse.class))))
-    })
-    public ResponseEntity<List<DeviceResponse>> getAllDevices() {
-        return ResponseEntity.ok(deviceService.getAllDevices());
+    @Operation(summary = "List devices", description = "Returns a paginated list of all registered devices.")
+    @ApiResponse(responseCode = "200", description = "Devices fetched")
+    public ResponseEntity<Page<DeviceResponse>> getAllDevices(
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(deviceService.getAllDevices(pageable));
     }
 
     @PutMapping("/{id}")
@@ -120,15 +118,11 @@ public class DeviceController {
     @GetMapping("/user/{userId}")
     @Operation(
             summary = "List devices by user id",
-            description = "Retrieves all devices associated with a specific user.")
-    @ApiResponses({
-        @ApiResponse(
-                responseCode = "200",
-                description = "Devices fetched for user",
-                content = @Content(array = @ArraySchema(schema = @Schema(implementation = DeviceResponse.class))))
-    })
-    public ResponseEntity<List<DeviceResponse>> getAllDevicesByUserId(
-            @Parameter(description = "User id", example = "1") @PathVariable Long userId) {
-        return ResponseEntity.ok(deviceService.getAllDevicesByUserId(userId));
+            description = "Retrieves a paginated list of devices associated with a specific user.")
+    @ApiResponse(responseCode = "200", description = "Devices fetched for user")
+    public ResponseEntity<Page<DeviceResponse>> getAllDevicesByUserId(
+            @Parameter(description = "User id", example = "1") @PathVariable Long userId,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(deviceService.getAllDevicesByUserId(userId, pageable));
     }
 }

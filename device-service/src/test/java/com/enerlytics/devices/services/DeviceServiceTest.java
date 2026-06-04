@@ -1,8 +1,7 @@
 package com.enerlytics.devices.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -19,12 +18,19 @@ import com.enerlytics.devices.exceptions.ResourceNotFoundException;
 import com.enerlytics.devices.mappers.DeviceMapper;
 import com.enerlytics.devices.repositories.DeviceRepository;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+@ExtendWith(MockitoExtension.class)
 class DeviceServiceTest {
 
     @Mock
@@ -36,14 +42,9 @@ class DeviceServiceTest {
     @InjectMocks
     private DeviceService deviceService;
 
-    public DeviceServiceTest() {
-        MockitoAnnotations.openMocks(this);
-    }
-
     @Test
     @DisplayName("Should create a new device successfully")
     void createDevice_Successful() {
-        // Arrange
         CreateDeviceRequest request =
                 new CreateDeviceRequest("Living Room Camera", DeviceType.CAMERA, "Living Room", 1L);
 
@@ -56,18 +57,15 @@ class DeviceServiceTest {
                 .build();
 
         DeviceResponse expectedResponse =
-                new DeviceResponse(1L, "Living Room Camera", DeviceType.CAMERA, "Living Room", 1L);
+                new DeviceResponse(1L, "Living Room Camera", DeviceType.CAMERA, "Living Room", 1L, null, null);
 
         when(deviceMapper.toEntity(request)).thenReturn(deviceEntity);
         when(deviceRepository.save(any(Device.class))).thenReturn(deviceEntity);
         when(deviceMapper.toResponse(deviceEntity)).thenReturn(expectedResponse);
 
-        // Act
         DeviceResponse actualResponse = deviceService.createDevice(request);
 
-        // Assert
-        assertNotNull(actualResponse);
-        assertEquals(expectedResponse, actualResponse);
+        assertThat(actualResponse).isNotNull().isEqualTo(expectedResponse);
 
         verify(deviceMapper, times(1)).toEntity(request);
         verify(deviceRepository, times(1)).save(any(Device.class));
@@ -77,7 +75,6 @@ class DeviceServiceTest {
     @Test
     @DisplayName("Should return DeviceResponse when device with given ID exists")
     void getDeviceById_Successful() {
-        // Arrange
         Long deviceId = 1L;
 
         Device deviceEntity = Device.builder()
@@ -89,17 +86,14 @@ class DeviceServiceTest {
                 .build();
 
         DeviceResponse expectedResponse =
-                new DeviceResponse(deviceId, "Thermostat", DeviceType.THERMOSTAT, "Hallway", 2L);
+                new DeviceResponse(deviceId, "Thermostat", DeviceType.THERMOSTAT, "Hallway", 2L, null, null);
 
-        when(deviceRepository.findById(deviceId)).thenReturn(java.util.Optional.of(deviceEntity));
+        when(deviceRepository.findById(deviceId)).thenReturn(Optional.of(deviceEntity));
         when(deviceMapper.toResponse(deviceEntity)).thenReturn(expectedResponse);
 
-        // Act
         DeviceResponse actualResponse = deviceService.getDeviceById(deviceId);
 
-        // Assert
-        assertNotNull(actualResponse);
-        assertEquals(expectedResponse, actualResponse);
+        assertThat(actualResponse).isNotNull().isEqualTo(expectedResponse);
 
         verify(deviceRepository, times(1)).findById(deviceId);
         verify(deviceMapper, times(1)).toResponse(deviceEntity);
@@ -108,25 +102,21 @@ class DeviceServiceTest {
     @Test
     @DisplayName("Should throw ResourceNotFoundException when device with given ID does not exist")
     void getDeviceById_DeviceNotFound() {
-        // Arrange
         Long deviceId = 999L;
-        when(deviceRepository.findById(deviceId)).thenReturn(java.util.Optional.empty());
+        when(deviceRepository.findById(deviceId)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> deviceService.getDeviceById(deviceId),
-                "Expected getDeviceById() to throw ResourceNotFoundException");
+        assertThatThrownBy(() -> deviceService.getDeviceById(deviceId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Device not found with id: 999");
 
-        assertEquals("Device not found with id: 999", exception.getMessage());
         verify(deviceRepository, times(1)).findById(deviceId);
         verify(deviceMapper, never()).toResponse(any());
     }
 
     @Test
-    @DisplayName("Should return all devices successfully")
+    @DisplayName("Should return all devices page successfully")
     void getAllDevices_Successful() {
-        // Arrange
+        Pageable pageable = PageRequest.of(0, 20);
         List<Device> devices = List.of(
                 Device.builder()
                         .id(1L)
@@ -143,47 +133,42 @@ class DeviceServiceTest {
                         .userId(1L)
                         .build());
 
-        List<DeviceResponse> expectedResponses = List.of(
-                new DeviceResponse(1L, "Doorbell", DeviceType.DOORBELL, "Front Door", 1L),
-                new DeviceResponse(2L, "Speaker", DeviceType.SPEAKER, "Bedroom", 1L));
+        Page<Device> devicePage = new PageImpl<>(devices, pageable, devices.size());
 
-        when(deviceRepository.findAll()).thenReturn(devices);
+        List<DeviceResponse> expectedResponses = List.of(
+                new DeviceResponse(1L, "Doorbell", DeviceType.DOORBELL, "Front Door", 1L, null, null),
+                new DeviceResponse(2L, "Speaker", DeviceType.SPEAKER, "Bedroom", 1L, null, null));
+
+        when(deviceRepository.findAll(pageable)).thenReturn(devicePage);
         when(deviceMapper.toResponse(devices.get(0))).thenReturn(expectedResponses.get(0));
         when(deviceMapper.toResponse(devices.get(1))).thenReturn(expectedResponses.get(1));
 
-        // Act
-        List<DeviceResponse> actualResponses = deviceService.getAllDevices();
+        Page<DeviceResponse> actualResponses = deviceService.getAllDevices(pageable);
 
-        // Assert
-        assertNotNull(actualResponses);
-        assertEquals(expectedResponses.size(), actualResponses.size());
-        assertEquals(expectedResponses, actualResponses);
+        assertThat(actualResponses).isNotNull();
+        assertThat(actualResponses.getContent()).containsExactlyElementsOf(expectedResponses);
 
-        verify(deviceRepository, times(1)).findAll();
+        verify(deviceRepository, times(1)).findAll(pageable);
         verify(deviceMapper, times(2)).toResponse(any(Device.class));
     }
 
     @Test
-    @DisplayName("Should return an empty list when no devices are available")
+    @DisplayName("Should return an empty page when no devices are available")
     void getAllDevices_EmptyList() {
-        // Arrange
-        when(deviceRepository.findAll()).thenReturn(List.of());
+        Pageable pageable = PageRequest.of(0, 20);
+        when(deviceRepository.findAll(pageable)).thenReturn(Page.empty(pageable));
 
-        // Act
-        List<DeviceResponse> actualResponses = deviceService.getAllDevices();
+        Page<DeviceResponse> actualResponses = deviceService.getAllDevices(pageable);
 
-        // Assert
-        assertNotNull(actualResponses);
-        assertEquals(0, actualResponses.size());
+        assertThat(actualResponses).isNotNull().isEmpty();
 
-        verify(deviceRepository, times(1)).findAll();
+        verify(deviceRepository, times(1)).findAll(pageable);
         verify(deviceMapper, never()).toResponse(any(Device.class));
     }
 
     @Test
     @DisplayName("Should update device successfully")
     void updateDevice_Successful() {
-        // Arrange
         Long deviceId = 1L;
         UpdateDeviceRequest request = new UpdateDeviceRequest("Outdoor Camera", null, "Garage", 3L);
 
@@ -204,19 +189,16 @@ class DeviceServiceTest {
                 .build();
 
         DeviceResponse expectedResponse =
-                new DeviceResponse(deviceId, "Outdoor Camera", DeviceType.CAMERA, "Garage", 3L);
+                new DeviceResponse(deviceId, "Outdoor Camera", DeviceType.CAMERA, "Garage", 3L, null, null);
 
-        when(deviceRepository.findById(deviceId)).thenReturn(java.util.Optional.of(existingDevice));
+        when(deviceRepository.findById(deviceId)).thenReturn(Optional.of(existingDevice));
         doNothing().when(deviceMapper).updateEntity(existingDevice, request);
         when(deviceRepository.save(existingDevice)).thenReturn(updatedDevice);
         when(deviceMapper.toResponse(updatedDevice)).thenReturn(expectedResponse);
 
-        // Act
         DeviceResponse actualResponse = deviceService.updateDevice(deviceId, request);
 
-        // Assert
-        assertNotNull(actualResponse);
-        assertEquals(expectedResponse, actualResponse);
+        assertThat(actualResponse).isNotNull().isEqualTo(expectedResponse);
 
         verify(deviceRepository, times(1)).findById(deviceId);
         verify(deviceMapper, times(1)).updateEntity(existingDevice, request);
@@ -227,18 +209,14 @@ class DeviceServiceTest {
     @Test
     @DisplayName("Should throw ResourceNotFoundException when updating a non-existent device")
     void updateDevice_DeviceNotFound() {
-        // Arrange
         Long deviceId = 404L;
         UpdateDeviceRequest request = new UpdateDeviceRequest("Camera", null, "Hall", 1L);
-        when(deviceRepository.findById(deviceId)).thenReturn(java.util.Optional.empty());
+        when(deviceRepository.findById(deviceId)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> deviceService.updateDevice(deviceId, request),
-                "Expected updateDevice() to throw ResourceNotFoundException");
+        assertThatThrownBy(() -> deviceService.updateDevice(deviceId, request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Device not found with id: 404");
 
-        assertEquals("Device not found with id: 404", exception.getMessage());
         verify(deviceRepository, times(1)).findById(deviceId);
         verify(deviceMapper, never()).updateEntity(any(Device.class), any(UpdateDeviceRequest.class));
         verify(deviceRepository, never()).save(any(Device.class));
@@ -247,7 +225,6 @@ class DeviceServiceTest {
     @Test
     @DisplayName("Should delete device successfully")
     void deleteDevice_Successful() {
-        // Arrange
         Long deviceId = 1L;
         Device device = Device.builder()
                 .id(deviceId)
@@ -257,13 +234,11 @@ class DeviceServiceTest {
                 .userId(2L)
                 .build();
 
-        when(deviceRepository.findById(deviceId)).thenReturn(java.util.Optional.of(device));
+        when(deviceRepository.findById(deviceId)).thenReturn(Optional.of(device));
         doNothing().when(deviceRepository).delete(device);
 
-        // Act
         deviceService.deleteDevice(deviceId);
 
-        // Assert
         verify(deviceRepository, times(1)).findById(deviceId);
         verify(deviceRepository, times(1)).delete(device);
     }
@@ -271,26 +246,22 @@ class DeviceServiceTest {
     @Test
     @DisplayName("Should throw ResourceNotFoundException when deleting a non-existent device")
     void deleteDevice_DeviceNotFound() {
-        // Arrange
         Long deviceId = 777L;
-        when(deviceRepository.findById(deviceId)).thenReturn(java.util.Optional.empty());
+        when(deviceRepository.findById(deviceId)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> deviceService.deleteDevice(deviceId),
-                "Expected deleteDevice() to throw ResourceNotFoundException");
+        assertThatThrownBy(() -> deviceService.deleteDevice(deviceId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Device not found with id: 777");
 
-        assertEquals("Device not found with id: 777", exception.getMessage());
         verify(deviceRepository, times(1)).findById(deviceId);
         verify(deviceRepository, never()).delete(any(Device.class));
     }
 
     @Test
-    @DisplayName("Should return all devices for a given user ID")
+    @DisplayName("Should return paginated devices for a given user ID")
     void getAllDevicesByUserId_Successful() {
-        // Arrange
         Long userId = 1L;
+        Pageable pageable = PageRequest.of(0, 20);
         List<Device> devices = List.of(
                 Device.builder()
                         .id(1L)
@@ -307,23 +278,22 @@ class DeviceServiceTest {
                         .userId(userId)
                         .build());
 
-        List<DeviceResponse> expectedResponses = List.of(
-                new DeviceResponse(1L, "Doorbell", DeviceType.DOORBELL, "Front Door", userId),
-                new DeviceResponse(2L, "Speaker", DeviceType.SPEAKER, "Bedroom", userId));
+        Page<Device> devicePage = new PageImpl<>(devices, pageable, devices.size());
 
-        when(deviceRepository.findAllByUserId(userId)).thenReturn(devices);
+        List<DeviceResponse> expectedResponses = List.of(
+                new DeviceResponse(1L, "Doorbell", DeviceType.DOORBELL, "Front Door", userId, null, null),
+                new DeviceResponse(2L, "Speaker", DeviceType.SPEAKER, "Bedroom", userId, null, null));
+
+        when(deviceRepository.findAllByUserId(userId, pageable)).thenReturn(devicePage);
         when(deviceMapper.toResponse(devices.get(0))).thenReturn(expectedResponses.get(0));
         when(deviceMapper.toResponse(devices.get(1))).thenReturn(expectedResponses.get(1));
 
-        // Act
-        List<DeviceResponse> actualResponses = deviceService.getAllDevicesByUserId(userId);
+        Page<DeviceResponse> actualResponses = deviceService.getAllDevicesByUserId(userId, pageable);
 
-        // Assert
-        assertNotNull(actualResponses);
-        assertEquals(expectedResponses.size(), actualResponses.size());
-        assertEquals(expectedResponses, actualResponses);
+        assertThat(actualResponses).isNotNull();
+        assertThat(actualResponses.getContent()).containsExactlyElementsOf(expectedResponses);
 
-        verify(deviceRepository, times(1)).findAllByUserId(userId);
+        verify(deviceRepository, times(1)).findAllByUserId(userId, pageable);
         verify(deviceMapper, times(2)).toResponse(any(Device.class));
     }
 }
